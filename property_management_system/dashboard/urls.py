@@ -3,5 +3,5 @@ from .views import dashboard
 
 
 urlpatterns = [
-    path('', dashboard, name='templates/dashboard'),
+    path('', dashboard, name='dashboard'),
 ]
