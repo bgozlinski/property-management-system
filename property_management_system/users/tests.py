@@ -144,6 +144,39 @@ class AuthenticationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.wsgi_request.user.is_authenticated)
 
+    def test_user_logout(self):
+        """Test that a user can successfully log out"""
+        # First, log in the user
+        self.client.login(username='testuser@example.com', password='testpassword123')
+
+        # Verify the user is logged in
+        self.assertTrue(self.client.session.get('_auth_user_id'))
+
+        # Get the logout URL
+        logout_url = reverse('logout')
+
+        # Perform the logout
+        response = self.client.post(logout_url)
+
+        # Check redirect to login page (as specified in settings.LOGOUT_REDIRECT_URL)
+        self.assertRedirects(response, self.login_url)
+
+        # Check that the user is no longer authenticated (session cleared)
+        self.assertFalse('_auth_user_id' in self.client.session)
+
+    def test_logout_redirect(self):
+        """Test that logout redirects to the correct page"""
+        # First, log in the user
+        self.client.login(username='testuser@example.com', password='testpassword123')
+
+        # Get the logout URL
+        logout_url = reverse('logout')
+
+        # Test with POST request
+        self.client.login(username='testuser@example.com', password='testpassword123')
+        response = self.client.post(logout_url)
+        self.assertRedirects(response, self.login_url)
+
 
 class UserRoleTests(TestCase):
     def setUp(self):
