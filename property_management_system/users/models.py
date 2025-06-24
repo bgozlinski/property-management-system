@@ -27,3 +27,21 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class Landlord(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    contact_info = models.TextField()
+
+    def __str__(self):
+        return self.name
+
+
+class Tenant(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    contact_info = models.TextField()
+
+    def __str__(self):
+        return self.name
