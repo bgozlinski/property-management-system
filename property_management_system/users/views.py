@@ -6,7 +6,7 @@ from django.contrib.messages import get_messages
 from .models import CustomUser, Tenant, Landlord
 
 
-def register(request):
+def register(request): # CBV -> class based view.
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():

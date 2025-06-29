@@ -4,7 +4,6 @@ from django.db import models
 from django.utils import timezone
 from properties.models import Property
 
-
 class Reminder(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()

@@ -9,6 +9,7 @@ from django.conf import settings
 from users.models import CustomUser
 from .models import TenantInvitation
 from .forms import TenantInvitationForm
+from django.utils.translation import gettext as _
 
 
 @login_required
@@ -29,7 +30,7 @@ def send_invitation(request):
                 reverse('accept_invitation', kwargs={'token': invitation.token})
             )
 
-            subject = f"Zaproszenie do wynajmu nieruchomości: {invitation.property_unit}"
+            subject = _(f"Zaproszenie do wynajmu nieruchomości: {invitation.property_unit}")
             message = f"""
             Witaj!
 

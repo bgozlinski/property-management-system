@@ -11,5 +11,5 @@ class RentalAgreement(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Agreement for {self.property} - {self.tenant}"
