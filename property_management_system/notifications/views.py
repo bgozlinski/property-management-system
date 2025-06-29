@@ -13,9 +13,9 @@ from .forms import TenantInvitationForm
 
 @login_required
 def send_invitation(request):
-    # Sprawdź czy użytkownik jest wynajmującym
+
     if request.user.role != CustomUser.RoleChoices.LANDLORD:
-        messages.error(request, "Tylko wynajmujący mogą wysyłać zaproszenia.")
+        messages.error(request, "Only Landlords can send invitations.")
         return redirect('dashboard')
 
     if request.method == 'POST':
@@ -25,12 +25,10 @@ def send_invitation(request):
             invitation.landlord = request.user
             invitation.save()
 
-            # Generuj link do zaproszenia
             invitation_url = request.build_absolute_uri(
                 reverse('accept_invitation', kwargs={'token': invitation.token})
             )
 
-            # Przygotuj treść emaila
             subject = f"Zaproszenie do wynajmu nieruchomości: {invitation.property_unit}"
             message = f"""
             Witaj!
@@ -47,7 +45,7 @@ def send_invitation(request):
             System zarządzania nieruchomościami
             """
 
-            # Wyślij email (w trybie deweloperskim zostanie wyświetlony w konsoli)
+            # Send email
             send_mail(
                 subject,
                 message,
@@ -67,42 +65,32 @@ def send_invitation(request):
 def accept_invitation(request, token):
     invitation = get_object_or_404(TenantInvitation, token=token)
 
-    # Sprawdź czy zaproszenie nie wygasło i jest oczekujące
     if invitation.is_expired:
         invitation.status = TenantInvitation.StatusChoices.EXPIRED
         invitation.save()
-        messages.error(request, "To zaproszenie wygasło.")
+        messages.error(request, "This invitation has expired.")
         return redirect('login')
 
     if not invitation.is_pending:
-        messages.error(request, "To zaproszenie zostało już wykorzystane lub odrzucone.")
+        messages.error(request, "This invitation has already been accepted or declined. Please login to continue.")
         return redirect('login')
 
-    # Jeśli użytkownik jest zalogowany
     if request.user.is_authenticated:
-        # Sprawdź czy to ten sam email
         if request.user.email == invitation.email:
-            # Akceptuj zaproszenie
             invitation.status = TenantInvitation.StatusChoices.ACCEPTED
             invitation.save()
 
-            # Tutaj można dodać logikę tworzenia umowy najmu
-
             messages.success(request,
-                             f"Zaproszenie do wynajmu nieruchomości {invitation.property_unit} zostało zaakceptowane.")
+                             f"Invitation fo property {invitation.property_unit} has been accepted.")
             return redirect('dashboard')
         else:
-            messages.error(request, "To zaproszenie jest przeznaczone dla innego adresu email.")
+            messages.error(request, "This invitation is not for you. Please login to continue.")
             return redirect('dashboard')
 
-    # Jeśli użytkownik nie jest zalogowany
-    # Zapisz token w sesji i przekieruj do rejestracji
     request.session['invitation_token'] = str(invitation.token)
-    messages.info(request, "Aby zaakceptować zaproszenie, zarejestruj się lub zaloguj.")
+    messages.info(request, "To accept this invitation, please login with your email address.")
 
-    # Jeśli użytkownik z tym emailem już istnieje, przekieruj do logowania
     if CustomUser.objects.filter(email=invitation.email).exists():
         return redirect('login')
 
-    # W przeciwnym razie przekieruj do rejestracji
     return redirect('register')
