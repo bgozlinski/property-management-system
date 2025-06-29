@@ -130,3 +130,7 @@ AUTH_USER_MODEL = "users.CustomUser"
 # Login and Logout settings
 LOGIN_REDIRECT_URL = '/'  # Redirect to home page after login
 LOGOUT_REDIRECT_URL = '/login/'  # Redirect to login page after logout
+
+# Email settings - Console backend for development
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
