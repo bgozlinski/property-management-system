@@ -43,3 +43,7 @@ def register(request): # CBV -> class based view.
         form = CustomUserCreationForm()
 
     return render(request, 'sign-up.html', {'form': form})
+
+
+def profile(request):
+    return render(request, 'profile.html')
