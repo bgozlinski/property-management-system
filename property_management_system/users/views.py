@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import CustomUserCreationForm
@@ -45,5 +46,32 @@ def register(request): # CBV -> class based view.
     return render(request, 'sign-up.html', {'form': form})
 
 
+@login_required
 def profile(request):
-    return render(request, 'profile.html')
+    user = request.user
+    profile_data = None
+    role_name = "Unknown"
+
+    # Get role-specific profile data
+    if user.role == CustomUser.RoleChoices.TENANT:
+        role_name = "Tenant"  # Set role_name regardless of exception
+        try:
+            profile_data = Tenant.objects.get(user=user)
+        except Tenant.DoesNotExist:
+            pass
+    elif user.role == CustomUser.RoleChoices.LANDLORD:
+        role_name = "Landlord"  # Set role_name regardless of exception
+        try:
+            profile_data = Landlord.objects.get(user=user)
+        except Landlord.DoesNotExist:
+            pass
+    elif user.role == CustomUser.RoleChoices.ADMINISTRATOR:
+        role_name = "Administrator"
+
+    context = {
+        'user': user,
+        'profile_data': profile_data,
+        'role_name': role_name
+    }
+
+    return render(request, 'profile.html', context)

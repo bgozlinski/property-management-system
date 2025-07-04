@@ -270,6 +270,12 @@
                   </li>
                 {% endif %}
 
+
+                <a href="{% url 'profile' %}" class="nav-link text-body font-weight-bold px-0 me-3" style="display: inline-block;">
+                  <i class="fa fa-user me-sm-1"></i>
+                  <span class="d-sm-inline d-none">Profile</span>
+                </a>
+
                 <form method="post" action="{% url 'logout' %}" style="display: inline;">
                   {% csrf_token %}
                   <button type="submit" class="nav-link text-body font-weight-bold px-0" style="background: none; border: none; cursor: pointer;">
