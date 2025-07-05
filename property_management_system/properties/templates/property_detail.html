@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Property - Property Management System{% endblock %}
+
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <div class="card shadow-lg">
+          <div class="card-header bg-primary p-4">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h3 class="text-white mb-0">Edit Property</h3>
+                <p class="text-white opacity-8 mb-0">Update property information</p>
+              </div>
+              <div class="col-md-4 text-end">
+                <i class="fas fa-home text-white opacity-8" style="font-size: 4rem;"></i>
+              </div>
+            </div>
+          </div>
+          <div class="card-body p-4">
+            <form method="post">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col-12">
+                  <div class="form-group">
+                    <label for="{{ form.address.id_for_label }}">Address</label>
+                    {{ form.address }}
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="form-group">
+                    <label for="{{ form.city.id_for_label }}">City</label>
+                    {{ form.city }}
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label for="{{ form.postal_code.id_for_label }}">Postal Code</label>
+                    {{ form.postal_code }}
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label for="{{ form.area_m2.id_for_label }}">Area (m²)</label>
+                    {{ form.area_m2 }}
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label for="{{ form.current_rent.id_for_label }}">Rent</label>
+                    {{ form.current_rent }}
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label for="{{ form.additional_costs.id_for_label }}">Additional Costs</label>
+                    {{ form.additional_costs }}
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="{{ form.status.id_for_label }}">Status</label>
+                    {{ form.status }}
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'property_list' %}" class="btn btn-secondary mb-0">Back to List</a>
+                <button type="submit" class="btn bg-gradient-primary mb-0">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

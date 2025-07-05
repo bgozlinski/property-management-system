@@ -68,6 +68,15 @@
                 <div class="col-md-8 d-flex align-items-center">
                   <h6 class="mb-0">Profile Information</h6>
                 </div>
+
+                {% if role_name == "Landlord" %}
+                  <div class="d-flex justify-content-end mt-4">
+                    <a href="{% url 'property_list' %}" class="btn bg-gradient-primary mb-0">
+                      <i class="fas fa-building me-2"></i> Manage Properties
+                    </a>
+                  </div>
+                {% endif %}
+
                 <div class="col-md-4 text-end">
                   <a href="javascript:;">
                     <i class="fas fa-user-edit text-secondary text-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Profile"></i>

@@ -31,6 +31,7 @@ INSTALLED_APPS += [
     'leases',
     'maintenance',
     'notifications',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
