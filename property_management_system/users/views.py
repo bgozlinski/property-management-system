@@ -8,45 +8,43 @@ from django.utils import timezone
 from .models import CustomUser, Tenant, Landlord
 from notifications.models import Reminder
 from properties.models import Property
+from django.urls import reverse_lazy
+from django.views.generic import FormView
 
 
-def register(request): # CBV -> class based view.
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)  # Get the user object but don't save to DB yet
-            if form.cleaned_data.get('is_landlord'):
-                user.role = CustomUser.RoleChoices.LANDLORD
-            user.save()  # Now save the user with the updated role
+class RegisterView(FormView):
+    template_name = 'sign-up.html'
+    form_class = CustomUserCreationForm
+    success_url = reverse_lazy('dashboard')
 
-            # Create the corresponding Tenant or Landlord instance
-            if user.role == CustomUser.RoleChoices.LANDLORD:
-                # Create a Landlord instance with default values
-                Landlord.objects.create(
-                    user=user,
-                    name=f"Landlord {user.email}",  # Default name
-                    contact_info="Please update your contact information"  # Default contact info
-                )
-            else:
-                # Create a Tenant instance with default values
-                Tenant.objects.create(
-                    user=user,
-                    name=f"Tenant {user.email}",  # Default name
-                    contact_info="Please update your contact information"  # Default contact info
-                )
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        if form.cleaned_data.get('is_landlord'):
+            user.role = CustomUser.RoleChoices.LANDLORD
+        user.save()
 
-            email = form.cleaned_data.get('email')
-            messages.success(request, f'Account created for {email}!')
 
-            storage = get_messages(request)
-            for message in storage:
-                pass
+        if user.role == CustomUser.RoleChoices.LANDLORD:
+            Landlord.objects.create(
+                user=user,
+                name=f"Landlord {user.email}",  # Default name
+                contact_info="Please update your contact information"  # Default contact info
+            )
+        else:
+            Tenant.objects.create(
+                user=user,
+                name=f"Tenant {user.email}",  # Default name
+                contact_info="Please update your contact information"  # Default contact info
+            )
 
-            return redirect('dashboard')
-    else:
-        form = CustomUserCreationForm()
+        email = form.cleaned_data.get('email')
+        messages.success(self.request, f'Account created for {email}!')
 
-    return render(request, 'sign-up.html', {'form': form})
+        storage = get_messages(self.request)
+        for message in storage:
+            pass
+
+        return super().form_valid(form)
 
 
 @login_required
