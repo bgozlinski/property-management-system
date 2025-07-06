@@ -33,7 +33,7 @@ class TenantInvitation(models.Model):
     )
 
     def __str__(self):
-        return f"Zaproszenie dla {self.email} - {self.property}"
+        return f"Zaproszenie dla {self.email} - {self.property_unit}"
 
     def save(self, *args, **kwargs):
         if not self.expires_at:
