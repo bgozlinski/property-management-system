@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Property - Property Management System{% endblock %}
+
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <div class="card shadow-lg">
+          <div class="card-header bg-primary p-4">
+            <h3 class="text-white mb-0">Add New Property</h3>
+          </div>
+          <div class="card-body p-4">
+            <form method="post">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="{{ form.address.id_for_label }}">Address</label>
+                {{ form.address }}
+              </div>
+              <div class="row">
+                <div class="col-md-8 mb-3">
+                  <label for="{{ form.city.id_for_label }}">City</label>
+                  {{ form.city }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="{{ form.postal_code.id_for_label }}">Postal Code</label>
+                  {{ form.postal_code }}
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="{{ form.area_m2.id_for_label }}">Area (m²)</label>
+                {{ form.area_m2 }}
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.current_rent.id_for_label }}">Rent ($)</label>
+                  {{ form.current_rent }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.additional_costs.id_for_label }}">Additional Costs ($)</label>
+                  {{ form.additional_costs }}
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="{{ form.status.id_for_label }}">Status</label>
+                {{ form.status }}
+              </div>
+              <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'profile' %}" class="btn btn-secondary mb-0">Cancel</a>
+                <button type="submit" class="btn bg-gradient-primary mb-0">Save Property</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

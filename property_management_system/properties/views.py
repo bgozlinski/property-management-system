@@ -3,13 +3,22 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+from django.urls import reverse_lazy
+from django.http import Http404
+from django.views.generic import CreateView, UpdateView, DeleteView
 
 from .models import Property
 from users.models import CustomUser
 from .forms import PropertyForm
-from .serializers import PropertySerializer  # Import the serializer
+from .serializers import PropertySerializer
+
+# Import the LandlordRequiredMixin from notifications app
+from notifications.views import LandlordRequiredMixin
 
 
+# Existing API views
 class PropertyListCreateAPIView(APIView):
     """
     API view to list all properties for a landlord or create a new property
@@ -81,6 +90,61 @@ class PropertyDetailAPIView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+# New class-based views for properties
+class PropertyCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
+    model = Property
+    form_class = PropertyForm
+    template_name = 'add_property.html'
+    success_url = reverse_lazy('profile')
+
+    def form_valid(self, form):
+        # Set the landlord to the current user's landlord profile
+        form.instance.landlord = self.request.user.landlord
+        response = super().form_valid(form)
+        messages.success(self.request, "Property created successfully.")
+        return response
+
+
+class PropertyUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
+    model = Property
+    form_class = PropertyForm
+    template_name = 'property_detail.html'  # Reuse existing template
+    success_url = reverse_lazy('profile')
+
+    def get_object(self, queryset=None):
+        # Get the property and check ownership
+        property_obj = super().get_object(queryset)
+        if property_obj.landlord.user != self.request.user:
+            raise Http404("Property not found")
+        return property_obj
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Property updated successfully.")
+        return response
+
+
+class PropertyDeleteView(LoginRequiredMixin, LandlordRequiredMixin, DeleteView):
+    model = Property
+    success_url = reverse_lazy('profile')
+
+    def get(self, request, *args, **kwargs):
+        # Skip confirmation page and redirect to POST
+        return self.post(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        # Get the property and check ownership
+        property_obj = super().get_object(queryset)
+        if property_obj.landlord.user != self.request.user:
+            raise Http404("Property not found")
+        return property_obj
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, "Property deleted successfully.")
+        return super().delete(request, *args, **kwargs)
+
+
+# Existing function-based views
 @login_required
 def property_list(request):
     """View to display and manage properties for a landlord"""

@@ -7,6 +7,7 @@ urlpatterns = [
     path('<int:pk>/', views.property_detail, name='property_detail'),
 
     # API Routes
-    path('api/properties/', views.PropertyListCreateAPIView.as_view(), name='api_property_list'),
-    path('api/properties/<int:pk>/', views.PropertyDetailAPIView.as_view(), name='api_property_detail'),
+    path('add/', views.PropertyCreateView.as_view(), name='add_property'),
+    path('edit/<int:pk>/', views.PropertyUpdateView.as_view(), name='edit_property'),
+    path('delete/<int:pk>/', views.PropertyDeleteView.as_view(), name='delete_property'),
 ]
