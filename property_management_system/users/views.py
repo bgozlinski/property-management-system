@@ -25,26 +25,21 @@ class RegisterView(FormView):
             user.role = CustomUser.RoleChoices.LANDLORD
         user.save()
 
-
         if user.role == CustomUser.RoleChoices.LANDLORD:
             Landlord.objects.create(
                 user=user,
-                name=f"Landlord {user.email}",  # Default name
+                name=f"Landlord {user.email}",
                 contact_info="Please update your contact information"  # Default contact info
             )
         else:
             Tenant.objects.create(
                 user=user,
-                name=f"Tenant {user.email}",  # Default name
+                name=f"Tenant {user.email}",
                 contact_info="Please update your contact information"  # Default contact info
             )
 
         email = form.cleaned_data.get('email')
         messages.success(self.request, f'Account created for {email}!')
-
-        storage = get_messages(self.request)
-        for message in storage:
-            pass
 
         return super().form_valid(form)
 
