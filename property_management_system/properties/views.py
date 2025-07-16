@@ -61,50 +61,31 @@ class PropertyDeleteView(LoginRequiredMixin, LandlordRequiredMixin, DeleteView):
         messages.success(request, "Property deleted successfully.")
         return super().delete(request, *args, **kwargs)
 
-@login_required
-def property_list(request):
-    """View to display and manage properties for a landlord"""
-    if request.user.role != CustomUser.RoleChoices.LANDLORD:
-        return redirect('dashboard')
+class PropertyListView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
+    model = Property
+    form_class = PropertyForm
+    template_name = 'property_list.html'
+    success_url = reverse_lazy('property_list')
 
-    properties = Property.objects.filter(landlord__user=request.user)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['properties'] = Property.objects.filter(landlord__user=self.request.user)
+        return context
 
-    if request.method == 'POST':
-        form = PropertyForm(request.POST)
-        if form.is_valid():
-            property = form.save(commit=False)
-            property.landlord = request.user.landlord
-            property.save()
-            return redirect('property_list')
-    else:
-        form = PropertyForm()
+    def form_valid(self, form):
+        property = form.save(commit=False)
+        property.landlord = self.request.user.landlord
+        property.save()
+        return redirect('property_list')
 
-    context = {
-        'properties': properties,
-        'form': form
-    }
+class PropertyDetailView(LoginRequiredMixin, UpdateView):
+    model = Property
+    form_class = PropertyForm
+    template_name = 'property_detail.html'
+    success_url = reverse_lazy('property_list')
 
-    return render(request, 'property_list.html', context)
-
-@login_required
-def property_detail(request, pk):
-    """View to display and edit a specific property"""
-    property = get_object_or_404(Property, pk=pk)
-
-    if property.landlord.user != request.user and request.user.role != CustomUser.RoleChoices.ADMINISTRATOR:
-        return redirect('dashboard')
-
-    if request.method == 'POST':
-        form = PropertyForm(request.POST, instance=property)
-        if form.is_valid():
-            form.save()
-            return redirect('property_list')
-    else:
-        form = PropertyForm(instance=property)
-
-    context = {
-        'property': property,
-        'form': form
-    }
-
-    return render(request, 'property_detail.html', context)
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if obj.landlord.user != self.request.user and self.request.user.role != CustomUser.RoleChoices.ADMINISTRATOR:
+            raise Http404("Property not found")
+        return obj

@@ -6,105 +6,110 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.conf import settings
 from django.http import Http404
-from django.views.generic import CreateView, UpdateView, DeleteView
+from django.views import View
+from django.views.generic import CreateView, UpdateView, DeleteView, FormView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Reminder, TenantInvitation
 from .forms import TenantInvitationForm, ReminderForm
-from users.models import CustomUser
+from users.models import CustomUser, Tenant
 from properties.models import Property
 
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
-
-@login_required
-def send_invitation(request):
-
-    if request.user.role != CustomUser.RoleChoices.LANDLORD:
-        messages.error(request, "Only Landlords can send invitations.")
-        return redirect('dashboard')
-
-    if request.method == 'POST':
-        form = TenantInvitationForm(request.POST, landlord=request.user)
-        if form.is_valid():
-            invitation = form.save(commit=False)
-            invitation.landlord = request.user
-            invitation.save()
-
-            invitation_url = request.build_absolute_uri(
-                reverse('accept_invitation', kwargs={'token': invitation.token})
-            )
-
-            subject = _(f"Zaproszenie do wynajmu nieruchomości: {invitation.property_unit}")
-            message = f"""
-            Witaj!
-
-            Zostałeś zaproszony przez {request.user.email} do wynajmu nieruchomości:
-            {invitation.property_unit}
-
-            Aby zaakceptować zaproszenie, kliknij w poniższy link:
-            {invitation_url}
-
-            Link jest ważny do: {invitation.expires_at.strftime('%d-%m-%Y %H:%M')}
-
-            Pozdrawiamy,
-            System zarządzania nieruchomościami
-            """
-
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@example.com',
-                [invitation.email],
-                fail_silently=False,
-            )
-
-            messages.success(request, f"Zaproszenie zostało wysłane na adres {invitation.email}.")
-            return redirect('dashboard')
-    else:
-        form = TenantInvitationForm(landlord=request.user)
-
-    return render(request, 'send_invitation.html', {'form': form})
-
-
-def accept_invitation(request, token):
-    invitation = get_object_or_404(TenantInvitation, token=token)
-
-    if invitation.is_expired:
-        invitation.status = TenantInvitation.StatusChoices.EXPIRED
-        invitation.save()
-        messages.error(request, "This invitation has expired.")
-        return redirect('login')
-
-    if not invitation.is_pending:
-        messages.error(request, "This invitation has already been accepted or declined. Please login to continue.")
-        return redirect('login')
-
-    if request.user.is_authenticated:
-        if request.user.email == invitation.email:
-            invitation.status = TenantInvitation.StatusChoices.ACCEPTED
-            invitation.save()
-
-            messages.success(request,
-                             f"Invitation fo property {invitation.property_unit} has been accepted.")
-            return redirect('dashboard')
-        else:
-            messages.error(request, "This invitation is not for you. Please login to continue.")
-            return redirect('dashboard')
-
-    request.session['invitation_token'] = str(invitation.token)
-    messages.info(request, "To accept this invitation, please login with your email address.")
-
-    if CustomUser.objects.filter(email=invitation.email).exists():
-        return redirect('login')
-
-    return redirect('register')
-
 
 class LandlordRequiredMixin(UserPassesTestMixin):
     """Mixin to ensure only landlords can access the view"""
 
     def test_func(self):
         return self.request.user.is_authenticated and self.request.user.role == CustomUser.RoleChoices.LANDLORD
+
+
+class SendInvitationView(LoginRequiredMixin, LandlordRequiredMixin, FormView):
+    template_name = 'send_invitation.html'
+    form_class = TenantInvitationForm
+    success_url = reverse_lazy('profile')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['landlord'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        invitation = form.save(commit=False)
+        invitation.landlord = self.request.user
+        invitation.save()
+
+        invitation_url = self.request.build_absolute_uri(
+            reverse('accept_invitation', args=[invitation.token])
+        )
+
+        send_mail(
+            _('Invitation to join Property Management System'),
+            _('You have been invited to join the Property Management System. '
+              'Click the link to accept: {}').format(invitation_url),
+            settings.DEFAULT_FROM_EMAIL,
+            [invitation.email],
+            fail_silently=False,
+        )
+
+        messages.success(self.request, _('Invitation sent successfully!'))
+        return super().form_valid(form)
+
+
+class AcceptInvitationView(View):
+    template_name = 'accept_invitation.html'
+
+    def get(self, request, token):
+        invitation = get_object_or_404(
+            TenantInvitation,
+            token=token,
+            status=TenantInvitation.StatusChoices.PENDING
+        )
+
+        if invitation.is_expired:
+            messages.error(request, _('This invitation has expired.'))
+            return redirect('login')
+
+        context = {'invitation': invitation}
+        return render(request, self.template_name, context)
+
+    def post(self, request, token):
+        invitation = get_object_or_404(
+            TenantInvitation,
+            token=token,
+            status=TenantInvitation.StatusChoices.PENDING
+        )
+
+        if invitation.is_expired:
+            messages.error(request, _('This invitation has expired.'))
+            return redirect('login')
+
+        try:
+            user = CustomUser.objects.get(email=invitation.email)
+            if user.role != CustomUser.RoleChoices.TENANT:
+                user.role = CustomUser.RoleChoices.TENANT
+                user.save()
+        except CustomUser.DoesNotExist:
+            user = CustomUser.objects.create_user(
+                email=invitation.email,
+                password=request.POST.get('password'),
+                role=CustomUser.RoleChoices.TENANT
+            )
+
+        try:
+            tenant = Tenant.objects.get(user=user)
+        except Tenant.DoesNotExist:
+            tenant = Tenant.objects.create(
+                user=user,
+                name=invitation.email.split('@')[0],
+                contact_info=invitation.email
+            )
+
+        invitation.status = TenantInvitation.StatusChoices.ACCEPTED
+        invitation.save()
+
+        messages.success(request, _('Invitation accepted successfully! You can now log in.'))
+        return redirect('login')
 
 
 class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
@@ -115,7 +120,6 @@ class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        # Filter properties to show only those owned by the current landlord
         form.fields['property'].queryset = Property.objects.filter(landlord__user=self.request.user)
         return form
 
