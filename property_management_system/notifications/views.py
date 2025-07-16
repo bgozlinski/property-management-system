@@ -8,26 +8,17 @@ from django.conf import settings
 from django.http import Http404
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
 from .models import Reminder, TenantInvitation
 from .forms import TenantInvitationForm, ReminderForm
-from .serializers import ReminderSerializer
 from users.models import CustomUser
 from properties.models import Property
 
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
-
-# Existing function-based views for invitations
 @login_required
 def send_invitation(request):
-    # Existing code...
-    # (Keep the existing implementation)
+
     if request.user.role != CustomUser.RoleChoices.LANDLORD:
         messages.error(request, "Only Landlords can send invitations.")
         return redirect('dashboard')
@@ -59,7 +50,6 @@ def send_invitation(request):
             System zarządzania nieruchomościami
             """
 
-            # Send email
             send_mail(
                 subject,
                 message,
@@ -77,8 +67,6 @@ def send_invitation(request):
 
 
 def accept_invitation(request, token):
-    # Existing code...
-    # (Keep the existing implementation)
     invitation = get_object_or_404(TenantInvitation, token=token)
 
     if invitation.is_expired:
@@ -112,99 +100,6 @@ def accept_invitation(request, token):
     return redirect('register')
 
 
-# Existing API views
-class ReminderListCreateAPIView(APIView):
-    """
-    API view to list all reminders for a landlord's properties or create a new reminder
-    """
-
-    def get(self, request):
-        if request.user.role != CustomUser.RoleChoices.LANDLORD:
-            return Response({"error": "Only landlords can view reminders"}, status=status.HTTP_403_FORBIDDEN)
-
-        landlord_properties = Property.objects.filter(landlord__user=request.user)
-
-        reminders = Reminder.objects.filter(property__in=landlord_properties).order_by('due_date')
-
-        serializer = ReminderSerializer(reminders, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        if request.user.role != CustomUser.RoleChoices.LANDLORD:
-            return Response({"error": "Only landlords can add reminders"}, status=status.HTTP_403_FORBIDDEN)
-
-        property_id = request.data.get('property')
-        if property_id:
-            try:
-                property_obj = Property.objects.get(id=property_id)
-                if property_obj.landlord.user != request.user:
-                    return Response(
-                        {"error": "You can only create reminders for your own properties"},
-                        status=status.HTTP_403_FORBIDDEN
-                    )
-            except Property.DoesNotExist:
-                return Response({"error": "Property not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = ReminderSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ReminderDetailAPIView(APIView):
-    """
-    API view to retrieve, update or delete a reminder
-    """
-
-    def get_object(self, pk, user):
-        reminder = get_object_or_404(Reminder, pk=pk)
-
-        if reminder.property.landlord.user != user and user.role != CustomUser.RoleChoices.ADMINISTRATOR:
-            return None
-        return reminder
-
-    def get(self, request, pk):
-        reminder = self.get_object(pk, request.user)
-        if not reminder:
-            return Response({"error": "Not found or not authorized"}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = ReminderSerializer(reminder)
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        reminder = self.get_object(pk, request.user)
-        if not reminder:
-            return Response({"error": "Not found or not authorized"}, status=status.HTTP_404_NOT_FOUND)
-
-        property_id = request.data.get('property')
-        if property_id and int(property_id) != reminder.property.id:
-            try:
-                property_obj = Property.objects.get(id=property_id)
-                if property_obj.landlord.user != request.user:
-                    return Response(
-                        {"error": "You can only assign reminders to your own properties"},
-                        status=status.HTTP_403_FORBIDDEN
-                    )
-            except Property.DoesNotExist:
-                return Response({"error": "Property not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = ReminderSerializer(reminder, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        reminder = self.get_object(pk, request.user)
-        if not reminder:
-            return Response({"error": "Not found or not authorized"}, status=status.HTTP_404_NOT_FOUND)
-
-        reminder.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# Mixin for landlord permission check
 class LandlordRequiredMixin(UserPassesTestMixin):
     """Mixin to ensure only landlords can access the view"""
 
@@ -212,7 +107,6 @@ class LandlordRequiredMixin(UserPassesTestMixin):
         return self.request.user.is_authenticated and self.request.user.role == CustomUser.RoleChoices.LANDLORD
 
 
-# New class-based views for reminders
 class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
     model = Reminder
     form_class = ReminderForm
@@ -226,7 +120,6 @@ class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
         return form
 
     def form_valid(self, form):
-        # Format the date for API
         form.instance.due_date = timezone.make_aware(
             timezone.datetime.strptime(
                 self.request.POST.get('due_date') + ' 00:00:00',
@@ -234,7 +127,6 @@ class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
             )
         )
 
-        # Verify property ownership
         property_obj = form.cleaned_data['property']
         if property_obj.landlord.user != self.request.user:
             messages.error(self.request, "You can only create reminders for your own properties.")
@@ -253,19 +145,16 @@ class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        # Filter properties to show only those owned by the current landlord
         form.fields['property'].queryset = Property.objects.filter(landlord__user=self.request.user)
         return form
 
     def get_object(self, queryset=None):
-        # Get the reminder and check ownership
         reminder = super().get_object(queryset)
         if reminder.property.landlord.user != self.request.user:
             raise Http404("Reminder not found")
         return reminder
 
     def form_valid(self, form):
-        # Format the date for API
         form.instance.due_date = timezone.make_aware(
             timezone.datetime.strptime(
                 self.request.POST.get('due_date') + ' 00:00:00',
@@ -273,7 +162,6 @@ class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
             )
         )
 
-        # Verify property ownership
         property_obj = form.cleaned_data['property']
         if property_obj.landlord.user != self.request.user:
             messages.error(self.request, "You can only assign reminders to your own properties.")
@@ -289,11 +177,9 @@ class ReminderDeleteView(LoginRequiredMixin, LandlordRequiredMixin, DeleteView):
     success_url = reverse_lazy('profile')
 
     def get(self, request, *args, **kwargs):
-        # Skip confirmation page and redirect to POST
         return self.post(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
-        # Get the reminder and check ownership
         reminder = super().get_object(queryset)
         if reminder.property.landlord.user != self.request.user:
             raise Http404("Reminder not found")
@@ -304,104 +190,118 @@ class ReminderDeleteView(LoginRequiredMixin, LandlordRequiredMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-# Keep the existing function-based views for backward compatibility
 @login_required
 def add_reminder(request):
     """View to add a new reminder using the existing ReminderListCreateAPIView"""
     if request.method == 'POST':
-        # Create a data dictionary from the form data
-        data = {
-            'title': request.POST.get('title'),
-            'description': request.POST.get('description'),
-            'property': request.POST.get('property'),
-            'due_date': request.POST.get('due_date') + 'T00:00:00Z',  # Format date for API
-        }
+        if request.user.role != CustomUser.RoleChoices.LANDLORD:
+            messages.error(request, "Only landlords can create reminders.")
+            return redirect('profile')
 
-        # Create a request object for the APIView
-        api_request = request._request
-        api_request.data = data
+        try:
+            propert_id = request.POST.get('property')
+            property_obj = Property.objects.get(pk=propert_id)
 
-        # Use the existing APIView to handle the request
-        view = ReminderListCreateAPIView()
-        response = view.post(api_request)
+            if property_obj.landlord.user != request.user:
+                messages.error(request, "You can only create reminders for your own properties.")
+                return redirect('profile')
 
-        # Handle the response
-        if response.status_code == status.HTTP_201_CREATED:
+            due_date = timezone.make_aware(
+                timezone.datetime.strptime(
+                    request.POST.get('due_date') + ' 00:00:00',
+                    '%Y-%m-%d %H:%M:%S'
+                )
+            )
+
+            reminder = Reminder(
+                title=request.POST.get('title'),
+                description=request.POST.get('description'),
+                property=property_obj,
+                due_date=due_date
+            )
+
+            reminder.save()
             messages.success(request, "Reminder created successfully.")
-        else:
-            for field, errors in response.data.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
+
+        except Property.DoesNotExist:
+            messages.error(request, "Property not found.")
+        except Exception as e:
+            messages.error(request, f"Error creating reminder: {str(e)}")
 
     return redirect('profile')
 
 
 @login_required
 def edit_reminder(request, pk):
-    """View to edit an existing reminder using the existing ReminderDetailAPIView"""
-    # Get the reminder using the APIView's get_object method
-    detail_view = ReminderDetailAPIView()
-    reminder = detail_view.get_object(pk, request.user)
+    """View to edit an existing reminder directly using the model"""
+    try:
+        reminder = get_object_or_404(Reminder, pk=pk)
 
-    if not reminder:
-        messages.error(request, "Reminder not found or you don't have permission to edit it.")
-        return redirect('profile')
+        if reminder.property.landlord.user != request.user:
+            messages.error(request, "Reminder not found or you don't have permission to edit it.")
+            return redirect('profile')
 
-    if request.method == 'POST':
-        # Create a data dictionary from the form data
-        data = {
-            'title': request.POST.get('title'),
-            'description': request.POST.get('description'),
-            'property': request.POST.get('property'),
-            'due_date': request.POST.get('due_date') + 'T00:00:00Z',  # Format date for API
-        }
+        if request.method == 'POST':
+            property_id = request.POST.get('property')
+            property_obj = Property.objects.get(pk=property_id)
 
-        # Create a request object for the APIView
-        api_request = request._request
-        api_request.data = data
+            if property_obj.landlord.user != request.user:
+                messages.error(request, "You can only assign reminders to your own properties.")
+                return redirect('profile')
 
-        # Use the existing APIView to handle the request
-        response = detail_view.put(api_request, pk)
+            due_date = timezone.make_aware(
+                timezone.datetime.strptime(
+                    request.POST.get('due_date') + ' 00:00:00',
+                    '%Y-%m-%d %H:%M:%S'
+                )
+            )
 
-        # Handle the response
-        if response.status_code == status.HTTP_200_OK:
+            reminder.title = request.POST.get('title')
+            reminder.description = request.POST.get('description')
+            reminder.property = property_obj
+            reminder.due_date = due_date
+            reminder.save()
+
             messages.success(request, "Reminder updated successfully.")
             return redirect('profile')
-        else:
-            for field, errors in response.data.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
 
-    # For GET requests, render the edit form
-    landlord_properties = Property.objects.filter(landlord__user=request.user)
+        landlord_properties = Property.objects.filter(landlord__user=request.user)
 
-    # Format the date for the form
-    due_date = reminder.due_date.strftime('%Y-%m-%d')
+        due_date = reminder.due_date.strftime('%Y-%m-%d')
 
-    context = {
-        'reminder': reminder,
-        'landlord_properties': landlord_properties,
-        'due_date': due_date
-    }
+        context = {
+            'reminder': reminder,
+            'landlord_properties': landlord_properties,
+            'due_date': due_date
+        }
 
-    return render(request, 'edit_reminder.html', context)
+        return render(request, 'edit_reminder.html', context)
+
+    except Reminder.DoesNotExist:
+        messages.error(request, "Reminder not found.")
+        return redirect('profile')
+    except Exception as e:
+        messages.error(request, f"Error updating reminder: {str(e)}")
+        return redirect('profile')
 
 
 @require_POST
 @login_required
 def delete_reminder(request, pk):
-    """View to delete an existing reminder using the existing ReminderDetailAPIView"""
-    # Use the existing APIView to handle the request
-    detail_view = ReminderDetailAPIView()
-    api_request = request._request
+    """View to delete an existing reminder directly using the model"""
+    try:
+        reminder = get_object_or_404(Reminder, pk=pk)
 
-    # Call the delete method
-    response = detail_view.delete(api_request, pk)
+        if reminder.property.landlord.user != request.user:
+            messages.error(request, "Reminder not found or you don't have permission to delete it.")
+            return redirect('profile')
 
-    # Handle the response
-    if response.status_code == status.HTTP_204_NO_CONTENT:
+        reminder.delete()
         messages.success(request, "Reminder deleted successfully.")
-    else:
-        messages.error(request, "Failed to delete reminder.")
+
+    except Reminder.DoesNotExist:
+        messages.error(request, "Reminder not found.")
+    except Exception as e:
+        messages.error(request, f"Error deleting reminder: {str(e)}")
 
     return redirect('profile')
