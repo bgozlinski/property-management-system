@@ -1,8 +1,8 @@
-from django.urls import path,include
-from .views import dashboard
-
+from django.urls import path, include
+from .views import DashboardView
 
 urlpatterns = [
-    path('', dashboard, name='dashboard'),
+    path('', DashboardView.as_view(), name='dashboard'),
     path('notifications/', include('notifications.urls')),
+
 ]

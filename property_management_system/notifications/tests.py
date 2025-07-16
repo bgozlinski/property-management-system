@@ -394,8 +394,19 @@ class TenantInvitationViewsTest(TestCase):
         self.client.logout()
         self.client.login(email='tenant@test.com', password='testpassword')
 
-        # Access the accept invitation view
+        # First, access the accept invitation view with GET to check the form is displayed
         response = self.client.get(reverse('accept_invitation', args=[self.invitation.token]))
+        self.assertEqual(response.status_code, 200)
+
+        # Then submit the form with POST to actually accept the invitation
+        form_data = {
+            'password': 'newpassword123',
+            'password_confirm': 'newpassword123'
+        }
+        response = self.client.post(
+            reverse('accept_invitation', args=[self.invitation.token]),
+            data=form_data
+        )
         self.assertEqual(response.status_code, 302)  # Redirect after successful acceptance
 
         # Check that invitation status is updated

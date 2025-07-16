@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import CustomUserCreationForm
@@ -10,6 +11,7 @@ from notifications.models import Reminder
 from properties.models import Property
 from django.urls import reverse_lazy
 from django.views.generic import FormView
+from django.views.generic import TemplateView
 
 
 class RegisterView(FormView):
@@ -47,45 +49,47 @@ class RegisterView(FormView):
         return super().form_valid(form)
 
 
-@login_required
-def profile(request):
-    user = request.user
-    profile_data = None
-    role_name = "Unknown"
-    reminders = []
-    landlord_properties = []
+class ProfileView(LoginRequiredMixin, TemplateView):
+    template_name = 'profile.html'
 
-    if user.role == CustomUser.RoleChoices.TENANT:
-        role_name = "Tenant"
-        try:
-            profile_data = Tenant.objects.get(user=user)
-        except Tenant.DoesNotExist:
-            pass
-    elif user.role == CustomUser.RoleChoices.LANDLORD:
-        role_name = "Landlord"
-        try:
-            profile_data = Landlord.objects.get(user=user)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        profile_data = None
+        role_name = "Unknown"
+        reminders = []
+        landlord_properties = []
 
-            landlord_properties = Property.objects.filter(landlord=profile_data)
+        if user.role == CustomUser.RoleChoices.TENANT:
+            role_name = "Tenant"
+            try:
+                profile_data = Tenant.objects.get(user=user)
+            except Tenant.DoesNotExist:
+                pass
+        elif user.role == CustomUser.RoleChoices.LANDLORD:
+            role_name = "Landlord"
+            try:
+                profile_data = Landlord.objects.get(user=user)
 
-            if landlord_properties.exists():
-                reminders = Reminder.objects.filter(
-                    property__in=landlord_properties
-                ).order_by('due_date')
+                landlord_properties = Property.objects.filter(landlord=profile_data)
 
-        except Landlord.DoesNotExist:
-            pass
-    elif user.role == CustomUser.RoleChoices.ADMINISTRATOR:
-        role_name = "Administrator"
+                if landlord_properties.exists():
+                    reminders = Reminder.objects.filter(
+                        property__in=landlord_properties
+                    ).order_by('due_date')
 
-    context = {
-        'user': user,
-        'profile_data': profile_data,
-        'role_name': role_name,
-        'reminders': reminders,
-        'landlord_properties': landlord_properties,
-        'current_date': timezone.now()
+            except Landlord.DoesNotExist:
+                pass
+        elif user.role == CustomUser.RoleChoices.ADMINISTRATOR:
+            role_name = "Administrator"
 
-    }
+        context.update({
+            'user': user,
+            'profile_data': profile_data,
+            'role_name': role_name,
+            'reminders': reminders,
+            'landlord_properties': landlord_properties,
+            'current_date': timezone.now()
+        })
 
-    return render(request, 'profile.html', context)
+        return context
