@@ -22,9 +22,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'django_extensions',
 ]
 
-INSTALLED_APPS += [
+INSTALLED_EXTENSIONS = [
     'dashboard',
     'users',
     'properties',
@@ -32,6 +34,8 @@ INSTALLED_APPS += [
     'maintenance',
     'notifications',
 ]
+
+INSTALLED_APPS += INSTALLED_EXTENSIONS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -98,9 +102,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -110,24 +111,17 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User class
 AUTH_USER_MODEL = "users.CustomUser"
 
-# Login and Logout settings
 LOGIN_REDIRECT_URL = '/'  # Redirect to home page after login
 LOGOUT_REDIRECT_URL = '/login/'  # Redirect to login page after logout
 
