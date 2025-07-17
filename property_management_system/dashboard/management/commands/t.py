@@ -14,6 +14,10 @@ from notifications.models import TenantInvitation
 from maintenance.models import MaintenanceRequest
 from dashboard.models import Payment
 
+from property_management_system.leases.models import RentalAgreement
+from property_management_system.notifications.models import Reminder
+from property_management_system.users.models import Tenant, Landlord
+
 
 class Command(BaseCommand):
     help = "Generates realistic sample data for development purposes"
@@ -212,12 +216,6 @@ class Command(BaseCommand):
 
     def clear_existing_data(self):
         """Clear all existing data from the database"""
-        from users.models import Tenant, Landlord
-        from properties.models import Property
-        from notifications.models import Reminder, TenantInvitation
-        from leases.models import RentalAgreement
-        from maintenance.models import MaintenanceRequest
-        from dashboard.models import Payment
 
         Payment.objects.all().delete()
         MaintenanceRequest.objects.all().delete()
