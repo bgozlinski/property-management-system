@@ -1,9 +1,6 @@
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import CustomUserCreationForm
-from django.contrib.messages import get_messages
 from django.utils import timezone
 
 from .models import CustomUser, Tenant, Landlord
@@ -15,13 +12,13 @@ from django.views.generic import TemplateView
 
 
 class RegisterView(FormView):
-    template_name = 'sign-up.html'
+    template_name = "sign-up.html"
     form_class = CustomUserCreationForm
-    success_url = reverse_lazy('dashboard')
+    success_url = reverse_lazy("dashboard")
 
     def form_valid(self, form):
         user = form.save(commit=False)
-        if form.cleaned_data.get('is_landlord'):
+        if form.cleaned_data.get("is_landlord"):
             user.role = CustomUser.RoleChoices.LANDLORD
         user.save()
 
@@ -29,23 +26,23 @@ class RegisterView(FormView):
             Landlord.objects.create(
                 user=user,
                 name=f"Landlord {user.email}",
-                contact_info="Please update your contact information"  # Default contact info
+                contact_info="Please update your contact information",  # Default contact info
             )
         else:
             Tenant.objects.create(
                 user=user,
                 name=f"Tenant {user.email}",
-                contact_info="Please update your contact information"  # Default contact info
+                contact_info="Please update your contact information",  # Default contact info
             )
 
-        email = form.cleaned_data.get('email')
-        messages.success(self.request, f'Account created for {email}!')
+        email = form.cleaned_data.get("email")
+        messages.success(self.request, f"Account created for {email}!")
 
         return super().form_valid(form)
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):
-    template_name = 'profile.html'
+    template_name = "profile.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -71,20 +68,22 @@ class ProfileView(LoginRequiredMixin, TemplateView):
                 if landlord_properties.exists():
                     reminders = Reminder.objects.filter(
                         property__in=landlord_properties
-                    ).order_by('due_date')
+                    ).order_by("due_date")
 
             except Landlord.DoesNotExist:
-                pass
+                pass  # TODO add catching error to sentry.
         elif user.role == CustomUser.RoleChoices.ADMINISTRATOR:
             role_name = "Administrator"
 
-        context.update({
-            'user': user,
-            'profile_data': profile_data,
-            'role_name': role_name,
-            'reminders': reminders,
-            'landlord_properties': landlord_properties,
-            'current_date': timezone.now()
-        })
+        context.update(
+            {
+                "user": user,
+                "profile_data": profile_data,
+                "role_name": role_name,
+                "reminders": reminders,
+                "landlord_properties": landlord_properties,
+                "current_date": timezone.now(),
+            }
+        )
 
         return context
