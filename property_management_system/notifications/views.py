@@ -96,14 +96,14 @@ class AcceptInvitationView(View):
                 role=CustomUser.RoleChoices.TENANT,
             )
 
-        try:
-            _ = Tenant.objects.get(user=user)
-        except Tenant.DoesNotExist:
-            _ = Tenant.objects.create(
-                user=user,
-                name=invitation.email.split("@")[0],
-                contact_info=invitation.email,
-            )
+        # Ensure a Tenant object exists for this user
+        Tenant.objects.get_or_create(
+            user=user,
+            defaults={
+                "name": invitation.email.split("@")[0],
+                "contact_info": invitation.email,
+            },
+        )
 
         invitation.status = TenantInvitation.StatusChoices.ACCEPTED
         invitation.save()
