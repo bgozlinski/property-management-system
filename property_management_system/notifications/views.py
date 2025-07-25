@@ -16,10 +16,30 @@ from properties.models import Property
 from django.utils.translation import gettext as _
 
 
+"""
+This module provides views for notifications and invitations in the system.
+
+It includes views for sending and accepting tenant invitations, as well as
+creating, updating, and deleting reminders for properties.
+"""
+
+
 class LandlordRequiredMixin(UserPassesTestMixin):
-    """Mixin to ensure only landlords can access the view"""
+    """
+    Mixin to ensure only landlords can access the view.
+
+    This mixin checks if the current user is authenticated and has the
+    LANDLORD role before allowing access to the view.
+    """
 
     def test_func(self):
+        """
+        Test if the current user is a landlord.
+
+        Returns:
+            bool: True if the user is authenticated and has the LANDLORD role,
+                 False otherwise.
+        """
         return (
             self.request.user.is_authenticated
             and self.request.user.role == CustomUser.RoleChoices.LANDLORD
@@ -27,16 +47,44 @@ class LandlordRequiredMixin(UserPassesTestMixin):
 
 
 class SendInvitationView(LoginRequiredMixin, LandlordRequiredMixin, FormView):
+    """
+    View for landlords to send invitations to tenants.
+
+    This view allows landlords to invite tenants to join the system by sending
+    them an email with a unique invitation link. Only authenticated landlords
+    can access this view.
+    """
+
     template_name = "send_invitation.html"
     form_class = TenantInvitationForm
     success_url = reverse_lazy("profile")
 
     def get_form_kwargs(self):
+        """
+        Add the current user as a landlord to the form kwargs.
+
+        This ensures that the form only shows properties owned by the current landlord.
+
+        Returns:
+            dict: The form kwargs with the landlord added.
+        """
         kwargs = super().get_form_kwargs()
         kwargs["landlord"] = self.request.user
         return kwargs
 
     def form_valid(self, form):
+        """
+        Process the valid form, create the invitation, and send the email.
+
+        Creates a tenant invitation associated with the current landlord and
+        sends an email to the tenant with a link to accept the invitation.
+
+        Args:
+            form: The validated invitation form.
+
+        Returns:
+            HttpResponse: Redirect to the success URL.
+        """
         invitation = form.save(commit=False)
         invitation.landlord = self.request.user
         invitation.save()
@@ -61,9 +109,30 @@ class SendInvitationView(LoginRequiredMixin, LandlordRequiredMixin, FormView):
 
 
 class AcceptInvitationView(View):
+    """
+    View for accepting tenant invitations.
+
+    This view handles both GET and POST requests for accepting invitations.
+    GET requests display the invitation acceptance form, while POST requests
+    process the form submission and create or update the user account.
+    """
+
     template_name = "accept_invitation.html"
 
     def get(self, request, token):
+        """
+        Handle GET requests to display the invitation acceptance form.
+
+        Retrieves the invitation by token and displays the acceptance form
+        if the invitation is valid and not expired.
+
+        Args:
+            request: The HTTP request.
+            token: The invitation token.
+
+        Returns:
+            HttpResponse: The rendered template or a redirect to login if expired.
+        """
         invitation = get_object_or_404(
             TenantInvitation, token=token, status=TenantInvitation.StatusChoices.PENDING
         )
@@ -76,6 +145,19 @@ class AcceptInvitationView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, token):
+        """
+        Handle POST requests to process the invitation acceptance.
+
+        Retrieves the invitation by token, creates or updates the user account,
+        and marks the invitation as accepted.
+
+        Args:
+            request: The HTTP request.
+            token: The invitation token.
+
+        Returns:
+            HttpResponse: Redirect to login page after successful processing.
+        """
         invitation = get_object_or_404(
             TenantInvitation, token=token, status=TenantInvitation.StatusChoices.PENDING
         )
@@ -96,7 +178,7 @@ class AcceptInvitationView(View):
                 role=CustomUser.RoleChoices.TENANT,
             )
 
-        # Ensure a Tenant object exists for this user
+        # Create a Tenant profile for the user if one doesn't exist
         Tenant.objects.get_or_create(
             user=user,
             defaults={
@@ -115,12 +197,31 @@ class AcceptInvitationView(View):
 
 
 class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
+    """
+    View for creating a new reminder.
+
+    This view allows landlords to create reminders for their properties.
+    Only authenticated landlords can access this view.
+    """
+
     model = Reminder
     form_class = ReminderForm
     template_name = "add_reminder.html"
     success_url = reverse_lazy("profile")
 
     def get_form(self, form_class=None):
+        """
+        Get the form instance and customize the property queryset.
+
+        Filters the property queryset to only show properties owned by the
+        current landlord.
+
+        Args:
+            form_class: The form class to use, defaults to self.form_class.
+
+        Returns:
+            Form: The form instance with filtered property queryset.
+        """
         form = super().get_form(form_class)
         form.fields["property"].queryset = Property.objects.filter(
             landlord__user=self.request.user
@@ -128,12 +229,26 @@ class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
         return form
 
     def form_valid(self, form):
+        """
+        Process the valid form and create the reminder.
+
+        Converts the date string to a timezone-aware datetime, verifies that
+        the property belongs to the current landlord, and creates the reminder.
+
+        Args:
+            form: The validated reminder form.
+
+        Returns:
+            HttpResponse: Redirect to the success URL or back to the form if invalid.
+        """
+        # Convert the date string to a timezone-aware datetime
         form.instance.due_date = timezone.make_aware(
             timezone.datetime.strptime(
                 self.request.POST.get("due_date") + " 00:00:00", "%Y-%m-%d %H:%M:%S"
             )
         )
 
+        # Verify that the property belongs to the current landlord
         property_obj = form.cleaned_data["property"]
         if property_obj.landlord.user != self.request.user:
             messages.error(
@@ -147,12 +262,32 @@ class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
 
 
 class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
+    """
+    View for updating an existing reminder.
+
+    This view allows landlords to update reminders for their properties.
+    Only authenticated landlords can access this view, and they can only
+    update reminders for properties they own.
+    """
+
     model = Reminder
     form_class = ReminderForm
     template_name = "edit_reminder.html"
     success_url = reverse_lazy("profile")
 
     def get_form(self, form_class=None):
+        """
+        Get the form instance and customize the property queryset.
+
+        Filters the property queryset to only show properties owned by the
+        current landlord.
+
+        Args:
+            form_class: The form class to use, defaults to self.form_class.
+
+        Returns:
+            Form: The form instance with filtered property queryset.
+        """
         form = super().get_form(form_class)
         form.fields["property"].queryset = Property.objects.filter(
             landlord__user=self.request.user
@@ -160,18 +295,47 @@ class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
         return form
 
     def get_object(self, queryset=None):
+        """
+        Retrieve the reminder and verify ownership.
+
+        Ensures that only the landlord who owns the property associated with
+        the reminder can update it.
+
+        Args:
+            queryset: Optional queryset to use for retrieving the object.
+
+        Returns:
+            Reminder: The reminder object if the user is the owner.
+
+        Raises:
+            Http404: If the user is not the owner of the property.
+        """
         reminder = super().get_object(queryset)
         if reminder.property.landlord.user != self.request.user:
             raise Http404("Reminder not found")
         return reminder
 
     def form_valid(self, form):
+        """
+        Process the valid form and update the reminder.
+
+        Converts the date string to a timezone-aware datetime, verifies that
+        the property belongs to the current landlord, and updates the reminder.
+
+        Args:
+            form: The validated reminder form.
+
+        Returns:
+            HttpResponse: Redirect to the success URL or back to the form if invalid.
+        """
+        # Convert the date string to a timezone-aware datetime
         form.instance.due_date = timezone.make_aware(
             timezone.datetime.strptime(
                 self.request.POST.get("due_date") + " 00:00:00", "%Y-%m-%d %H:%M:%S"
             )
         )
 
+        # Verify that the property belongs to the current landlord
         property_obj = form.cleaned_data["property"]
         if property_obj.landlord.user != self.request.user:
             messages.error(
@@ -185,136 +349,66 @@ class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
 
 
 class ReminderDeleteView(LoginRequiredMixin, LandlordRequiredMixin, DeleteView):
+    """
+    View for deleting an existing reminder.
+
+    This view allows landlords to delete reminders for their properties.
+    Only authenticated landlords can access this view, and they can only
+    delete reminders for properties they own.
+    """
+
     model = Reminder
     success_url = reverse_lazy("profile")
 
     def get(self, request, *args, **kwargs):
+        """
+        Handle GET requests by redirecting to POST.
+
+        This prevents showing a confirmation page and directly processes
+        the deletion when accessed via GET.
+
+        Args:
+            request: The HTTP request.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            HttpResponse: The result of the POST method.
+        """
         return self.post(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
+        """
+        Retrieve the reminder and verify ownership.
+
+        Ensures that only the landlord who owns the property associated with
+        the reminder can delete it.
+
+        Args:
+            queryset: Optional queryset to use for retrieving the object.
+
+        Returns:
+            Reminder: The reminder object if the user is the owner.
+
+        Raises:
+            Http404: If the user is not the owner of the property.
+        """
         reminder = super().get_object(queryset)
         if reminder.property.landlord.user != self.request.user:
             raise Http404("Reminder not found")
         return reminder
 
     def delete(self, request, *args, **kwargs):
+        """
+        Delete the reminder and show a success message.
+
+        Args:
+            request: The HTTP request.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            HttpResponse: Redirect to the success URL with a success message.
+        """
         messages.success(request, "Reminder deleted successfully.")
         return super().delete(request, *args, **kwargs)
-
-
-#
-# @login_required
-# def add_reminder(request):
-#     """View to add a new reminder using the existing ReminderListCreateAPIView"""
-#     if request.method == 'POST':
-#         if request.user.role != CustomUser.RoleChoices.LANDLORD:
-#             messages.error(request, "Only landlords can create reminders.")
-#             return redirect('profile')
-#
-#         try:
-#             propert_id = request.POST.get('property')
-#             property_obj = Property.objects.get(pk=propert_id)
-#
-#             if property_obj.landlord.user != request.user:
-#                 messages.error(request, "You can only create reminders for your own properties.")
-#                 return redirect('profile')
-#
-#             due_date = timezone.make_aware(
-#                 timezone.datetime.strptime(
-#                     request.POST.get('due_date') + ' 00:00:00',
-#                     '%Y-%m-%d %H:%M:%S'
-#                 )
-#             )
-#
-#             reminder = Reminder(
-#                 title=request.POST.get('title'),
-#                 description=request.POST.get('description'),
-#                 property=property_obj,
-#                 due_date=due_date
-#             )
-#
-#             reminder.save()
-#             messages.success(request, "Reminder created successfully.")
-#
-#         except Property.DoesNotExist:
-#             messages.error(request, "Property not found.")
-#         except Exception as e:
-#             messages.error(request, f"Error creating reminder: {str(e)}")
-#
-#     return redirect('profile')
-#
-#
-# @login_required
-# def edit_reminder(request, pk):
-#     """View to edit an existing reminder directly using the model"""
-#     try:
-#         reminder = get_object_or_404(Reminder, pk=pk)
-#
-#         if reminder.property.landlord.user != request.user:
-#             messages.error(request, "Reminder not found or you don't have permission to edit it.")
-#             return redirect('profile')
-#
-#         if request.method == 'POST':
-#             property_id = request.POST.get('property')
-#             property_obj = Property.objects.get(pk=property_id)
-#
-#             if property_obj.landlord.user != request.user:
-#                 messages.error(request, "You can only assign reminders to your own properties.")
-#                 return redirect('profile')
-#
-#             due_date = timezone.make_aware(
-#                 timezone.datetime.strptime(
-#                     request.POST.get('due_date') + ' 00:00:00',
-#                     '%Y-%m-%d %H:%M:%S'
-#                 )
-#             )
-#
-#             reminder.title = request.POST.get('title')
-#             reminder.description = request.POST.get('description')
-#             reminder.property = property_obj
-#             reminder.due_date = due_date
-#             reminder.save()
-#
-#             messages.success(request, "Reminder updated successfully.")
-#             return redirect('profile')
-#
-#         landlord_properties = Property.objects.filter(landlord__user=request.user)
-#
-#         due_date = reminder.due_date.strftime('%Y-%m-%d')
-#
-#         context = {
-#             'reminder': reminder,
-#             'landlord_properties': landlord_properties,
-#             'due_date': due_date
-#         }
-#
-#         return render(request, 'edit_reminder.html', context)
-#
-#     except Reminder.DoesNotExist:
-#         messages.error(request, "Reminder not found.")
-#         return redirect('profile')
-#     except Exception as e:
-#         messages.error(request, f"Error updating reminder: {str(e)}")
-#         return redirect('profile')
-#
-#
-# @require_POST
-# @login_required
-# def delete_reminder(request, pk):
-#     """View to delete an existing reminder directly using the model"""
-#     try:
-#         reminder = get_object_or_404(Reminder, pk=pk)
-#
-#         if reminder.property.landlord.user != request.user:
-#             messages.error(request, "Reminder not found or you don't have permission to delete it.")
-#             return redirect('profile')
-#
-#         reminder.delete()
-#         messages.success(request, "Reminder deleted successfully.")
-#
-#     except Reminder.DoesNotExist:
-#         messages.error(request, "Reminder not found.")
-#     except Exception as e:
-#         messages.error(request, f"Error deleting reminder: {str(e)}")
-#
-#     return redirect('profile')

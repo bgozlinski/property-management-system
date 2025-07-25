@@ -11,12 +11,38 @@ from django.views.generic import FormView
 from django.views.generic import TemplateView
 
 
+"""
+This module provides views for user registration and profile management.
+
+It includes views for user registration and profile display, handling both
+tenant and landlord user types.
+"""
+
+
 class RegisterView(FormView):
+    """
+    View for user registration.
+
+    Handles the registration form submission, creates the appropriate user type
+    (tenant or landlord), and redirects to the dashboard upon successful registration.
+    """
+
     template_name = "sign-up.html"
     form_class = CustomUserCreationForm
     success_url = reverse_lazy("dashboard")
 
     def form_valid(self, form):
+        """
+        Process the valid form, create the user and associated profile.
+
+        Creates either a Landlord or Tenant profile based on the user's role.
+
+        Args:
+            form: The validated registration form.
+
+        Returns:
+            HttpResponse: Redirect to the dashboard.
+        """
         user = form.save(commit=False)
         if form.cleaned_data.get("is_landlord"):
             user.role = CustomUser.RoleChoices.LANDLORD
@@ -26,13 +52,13 @@ class RegisterView(FormView):
             Landlord.objects.create(
                 user=user,
                 name=f"Landlord {user.email}",
-                contact_info="Please update your contact information",  # Default contact info
+                contact_info="Please update your contact information",
             )
         else:
             Tenant.objects.create(
                 user=user,
                 name=f"Tenant {user.email}",
-                contact_info="Please update your contact information",  # Default contact info
+                contact_info="Please update your contact information",
             )
 
         email = form.cleaned_data.get("email")
@@ -42,9 +68,28 @@ class RegisterView(FormView):
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):
+    """
+    View for displaying the user's profile.
+
+    Shows different information based on the user's role (tenant, landlord, or administrator).
+    For landlords, it also displays their properties and reminders.
+    """
+
     template_name = "profile.html"
 
     def get_context_data(self, **kwargs):
+        """
+        Get the context data for the profile template.
+
+        Retrieves user profile data, role information, and for landlords,
+        their properties and reminders.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict: Context dictionary with user profile data and role-specific information.
+        """
         context = super().get_context_data(**kwargs)
         user = self.request.user
         profile_data = None
@@ -71,7 +116,8 @@ class ProfileView(LoginRequiredMixin, TemplateView):
                     ).order_by("due_date")
 
             except Landlord.DoesNotExist:
-                pass  # TODO add catching error to sentry.
+                # Error handling should be implemented here
+                pass
         elif user.role == CustomUser.RoleChoices.ADMINISTRATOR:
             role_name = "Administrator"
 
