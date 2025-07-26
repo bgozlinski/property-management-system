@@ -1,0 +1,141 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Tenant Invitations{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+          <h6>Tenant Invitations</h6>
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addInvitationModal">
+            <i class="fas fa-plus me-2"></i> Invite Tenant
+          </button>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Property</th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date Sent</th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                  <th class="text-secondary opacity-7">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for invitation in invitations %}
+                <tr>
+                  <td>
+                    <div class="d-flex px-2 py-1">
+                      <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm">{{ invitation.email }}</h6>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <p class="text-xs font-weight-bold mb-0">{{ invitation.property_unit.name }}</p>
+                    <p class="text-xs text-secondary mb-0">{{ invitation.property_unit.address }}</p>
+                  </td>
+                  <td class="align-middle text-center">
+                    <span class="text-secondary text-xs font-weight-bold">{{ invitation.created_at|date:"d/m/Y" }}</span>
+                  </td>
+                  <td class="align-middle text-center text-sm">
+                    {% if invitation.status == 2 %}
+                    <span class="badge badge-sm bg-gradient-success">Accepted</span>
+                    {% elif invitation.status == 1 %}
+                    <span class="badge badge-sm bg-gradient-warning">Pending</span>
+                    {% elif invitation.status == 4 %}
+                    <span class="badge badge-sm bg-gradient-danger">Expired</span>
+                    {% elif invitation.status == 3 %}
+                    <span class="badge badge-sm bg-gradient-danger">Rejected</span>
+                    {% endif %}
+                  </td>
+                  <td class="align-middle">
+                    {% if invitation.status == 1 %}
+                    <a href="{% url 'send_invitation' %}?resend={{ invitation.id }}" class="text-info font-weight-bold text-xs me-2" data-toggle="tooltip" data-original-title="Resend invitation">
+                      <i class="fas fa-paper-plane"></i> Resend
+                    </a>
+                    <a href="#" class="text-danger font-weight-bold text-xs cancel-invitation" data-id="{{ invitation.id }}" data-toggle="tooltip" data-original-title="Cancel invitation">
+                      <i class="fas fa-trash"></i> Delete
+                    </a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center py-4">
+                    <p class="text-secondary mb-0">No invitations found. Invite your first tenant!</p>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Invitation Modal -->
+<div class="modal fade" id="addInvitationModal" tabindex="-1" aria-labelledby="addInvitationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addInvitationModalLabel">Invite Tenant</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'send_invitation' %}">
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            {{ form.email }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Property</label>
+            {{ form.property_unit }}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Send Invitation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden form for canceling invitations -->
+<form id="cancelInvitationForm" method="post" action="{% url 'send_invitation' %}" style="display: none;">
+  {% csrf_token %}
+  <input type="hidden" name="cancel_invitation" id="cancelInvitationId" value="">
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add Bootstrap form classes to form fields
+    const formFields = document.querySelectorAll('form input, form select, form textarea');
+    formFields.forEach(field => {
+      field.classList.add('form-control');
+    });
+
+    // Add event listeners for cancel buttons
+    document.querySelectorAll('.cancel-invitation').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const invitationId = this.getAttribute('data-id');
+        if (confirm('Are you sure you want to cancel this invitation?')) {
+          document.getElementById('cancelInvitationId').value = invitationId;
+          document.getElementById('cancelInvitationForm').submit();
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

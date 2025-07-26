@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.http import Http404
 from django.views import View
-from django.views.generic import CreateView, UpdateView, DeleteView, FormView
+from django.views.generic import CreateView, UpdateView, DeleteView, FormView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Reminder, TenantInvitation
 from .forms import TenantInvitationForm, ReminderForm
@@ -57,7 +57,7 @@ class SendInvitationView(LoginRequiredMixin, LandlordRequiredMixin, FormView):
 
     template_name = "send_invitation.html"
     form_class = TenantInvitationForm
-    success_url = reverse_lazy("profile")
+    success_url = reverse_lazy("invitation_list")
 
     def get_form_kwargs(self):
         """
@@ -71,6 +71,71 @@ class SendInvitationView(LoginRequiredMixin, LandlordRequiredMixin, FormView):
         kwargs = super().get_form_kwargs()
         kwargs["landlord"] = self.request.user
         return kwargs
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handle POST requests, including invitation cancellation.
+
+        If the request includes a cancel_invitation parameter, the invitation
+        is deleted. Otherwise, the form is processed normally.
+
+        Args:
+            request: The HTTP request.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            HttpResponse: Redirect to the success URL.
+        """
+        # Check if this is a cancellation request
+        if "cancel_invitation" in request.POST and request.POST["cancel_invitation"]:
+            invitation_id = request.POST["cancel_invitation"]
+            try:
+                invitation = TenantInvitation.objects.get(
+                    id=invitation_id,
+                    landlord=request.user,
+                    status=TenantInvitation.StatusChoices.PENDING,
+                )
+                invitation.delete()
+                messages.success(request, _("Invitation deleted successfully!"))
+                return redirect(self.success_url)
+            except TenantInvitation.DoesNotExist:
+                messages.error(request, _("Invitation not found or cannot be deleted."))
+                return redirect(self.success_url)
+
+        # Handle resend request
+        if "resend" in request.GET:
+            invitation_id = request.GET["resend"]
+            try:
+                invitation = TenantInvitation.objects.get(
+                    id=invitation_id,
+                    landlord=request.user,
+                    status=TenantInvitation.StatusChoices.PENDING,
+                )
+
+                invitation_url = self.request.build_absolute_uri(
+                    reverse("accept_invitation", args=[invitation.token])
+                )
+
+                send_mail(
+                    _("Invitation to join Property Management System"),
+                    _(
+                        "You have been invited to join the Property Management System. "
+                        "Click the link to accept: {}"
+                    ).format(invitation_url),
+                    settings.DEFAULT_FROM_EMAIL,
+                    [invitation.email],
+                    fail_silently=False,
+                )
+
+                messages.success(request, _("Invitation resent successfully!"))
+                return redirect(self.success_url)
+            except TenantInvitation.DoesNotExist:
+                messages.error(request, _("Invitation not found or cannot be resent."))
+                return redirect(self.success_url)
+
+        # Normal form processing
+        return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
         """
@@ -106,6 +171,46 @@ class SendInvitationView(LoginRequiredMixin, LandlordRequiredMixin, FormView):
 
         messages.success(self.request, _("Invitation sent successfully!"))
         return super().form_valid(form)
+
+
+class TenantInvitationListView(LoginRequiredMixin, LandlordRequiredMixin, ListView):
+    """
+    View for listing tenant invitations.
+
+    This view displays a list of invitations sent by the current landlord.
+    It also provides a form for creating new invitations.
+    Only authenticated landlords can access this view.
+    """
+
+    model = TenantInvitation
+    template_name = "invitation_list.html"
+    context_object_name = "invitations"
+
+    def get_queryset(self):
+        """
+        Filter invitations to show only those sent by the current landlord.
+
+        Returns:
+            QuerySet: Filtered queryset of invitations.
+        """
+        return TenantInvitation.objects.filter(landlord=self.request.user).order_by(
+            "-created_at"
+        )
+
+    def get_context_data(self, **kwargs):
+        """
+        Add the invitation form to the context.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict: Context dictionary with the invitation form.
+        """
+        context = super().get_context_data(**kwargs)
+        form = TenantInvitationForm(landlord=self.request.user)
+        context["form"] = form
+        return context
 
 
 class AcceptInvitationView(View):
@@ -207,7 +312,7 @@ class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
     model = Reminder
     form_class = ReminderForm
     template_name = "add_reminder.html"
-    success_url = reverse_lazy("profile")
+    success_url = reverse_lazy("reminder_list")
 
     def get_form(self, form_class=None):
         """
@@ -273,7 +378,7 @@ class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
     model = Reminder
     form_class = ReminderForm
     template_name = "edit_reminder.html"
-    success_url = reverse_lazy("profile")
+    success_url = reverse_lazy("reminder_list")
 
     def get_form(self, form_class=None):
         """
@@ -348,6 +453,49 @@ class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
         return response
 
 
+class ReminderListView(LoginRequiredMixin, LandlordRequiredMixin, ListView):
+    """
+    View for listing reminders.
+
+    This view displays a list of reminders for properties owned by the current landlord.
+    It also provides a form for creating new reminders.
+    Only authenticated landlords can access this view.
+    """
+
+    model = Reminder
+    template_name = "reminder_list.html"
+    context_object_name = "reminders"
+
+    def get_queryset(self):
+        """
+        Filter reminders to show only those for properties owned by the current landlord.
+
+        Returns:
+            QuerySet: Filtered queryset of reminders.
+        """
+        return Reminder.objects.filter(
+            property__landlord__user=self.request.user
+        ).order_by("due_date")
+
+    def get_context_data(self, **kwargs):
+        """
+        Add the reminder form to the context.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict: Context dictionary with the reminder form.
+        """
+        context = super().get_context_data(**kwargs)
+        form = ReminderForm()
+        form.fields["property"].queryset = Property.objects.filter(
+            landlord__user=self.request.user
+        )
+        context["form"] = form
+        return context
+
+
 class ReminderDeleteView(LoginRequiredMixin, LandlordRequiredMixin, DeleteView):
     """
     View for deleting an existing reminder.
@@ -358,7 +506,7 @@ class ReminderDeleteView(LoginRequiredMixin, LandlordRequiredMixin, DeleteView):
     """
 
     model = Reminder
-    success_url = reverse_lazy("profile")
+    success_url = reverse_lazy("reminder_list")
 
     def get(self, request, *args, **kwargs):
         """
