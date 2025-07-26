@@ -74,7 +74,7 @@ class SendInvitationView(LoginRequiredMixin, LandlordRequiredMixin, FormView):
 
     def post(self, request, *args, **kwargs):
         """
-        Handle POST requests, including invitation cancellation.
+        Handle POST requests, including  tation cancellation.
 
         If the request includes a cancel_invitation parameter, the invitation
         is deleted. Otherwise, the form is processed normally.
@@ -91,10 +91,15 @@ class SendInvitationView(LoginRequiredMixin, LandlordRequiredMixin, FormView):
         if "cancel_invitation" in request.POST and request.POST["cancel_invitation"]:
             invitation_id = request.POST["cancel_invitation"]
             try:
+                # Allow deleting for PENDING, EXPIRED, and ACCEPTED invitations
                 invitation = TenantInvitation.objects.get(
                     id=invitation_id,
                     landlord=request.user,
-                    status=TenantInvitation.StatusChoices.PENDING,
+                    status__in=[
+                        TenantInvitation.StatusChoices.PENDING,
+                        TenantInvitation.StatusChoices.EXPIRED,
+                        TenantInvitation.StatusChoices.ACCEPTED,
+                    ],
                 )
                 invitation.delete()
                 messages.success(request, _("Invitation deleted successfully!"))
@@ -107,11 +112,28 @@ class SendInvitationView(LoginRequiredMixin, LandlordRequiredMixin, FormView):
         if "resend" in request.GET:
             invitation_id = request.GET["resend"]
             try:
+                # Allow resending for both PENDING and EXPIRED invitations
                 invitation = TenantInvitation.objects.get(
                     id=invitation_id,
                     landlord=request.user,
-                    status=TenantInvitation.StatusChoices.PENDING,
+                    status__in=[
+                        TenantInvitation.StatusChoices.PENDING,
+                        TenantInvitation.StatusChoices.EXPIRED,
+                    ],
                 )
+
+                # If the invitation was expired, update its status to PENDING and set a new expiration date
+                if invitation.status == TenantInvitation.StatusChoices.EXPIRED:
+                    invitation.status = TenantInvitation.StatusChoices.PENDING
+                    invitation.expires_at = timezone.now() + timezone.timedelta(days=7)
+                    invitation.save()
+
+                # Update the created_at field to reflect the new sent date
+                # Since created_at has auto_now_add=True, we need to update it directly in the database
+                now = timezone.now()
+                TenantInvitation.objects.filter(id=invitation.id).update(created_at=now)
+                # Refresh the invitation object to get the updated created_at value
+                invitation.refresh_from_db()
 
                 invitation_url = self.request.build_absolute_uri(
                     reverse("accept_invitation", args=[invitation.token])
@@ -180,6 +202,9 @@ class TenantInvitationListView(LoginRequiredMixin, LandlordRequiredMixin, ListVi
     This view displays a list of invitations sent by the current landlord.
     It also provides a form for creating new invitations.
     Only authenticated landlords can access this view.
+
+    Before displaying the invitations, it updates the status of any expired
+    invitations from PENDING to EXPIRED.
     """
 
     model = TenantInvitation
@@ -188,11 +213,18 @@ class TenantInvitationListView(LoginRequiredMixin, LandlordRequiredMixin, ListVi
 
     def get_queryset(self):
         """
-        Filter invitations to show only those sent by the current landlord.
+        Update expired invitations and filter to show only those sent by the current landlord.
+
+        First, it updates any pending invitations that have expired.
+        Then, it returns a queryset of all invitations sent by the current landlord.
 
         Returns:
             QuerySet: Filtered queryset of invitations.
         """
+        # Update expired invitations
+        TenantInvitation.update_expired_invitations()
+
+        # Return invitations for the current landlord
         return TenantInvitation.objects.filter(landlord=self.request.user).order_by(
             "-created_at"
         )
@@ -220,6 +252,9 @@ class AcceptInvitationView(View):
     This view handles both GET and POST requests for accepting invitations.
     GET requests display the invitation acceptance form, while POST requests
     process the form submission and create or update the user account.
+
+    Before processing the invitation, it updates the status of any expired
+    invitations from PENDING to EXPIRED.
     """
 
     template_name = "accept_invitation.html"
@@ -228,7 +263,8 @@ class AcceptInvitationView(View):
         """
         Handle GET requests to display the invitation acceptance form.
 
-        Retrieves the invitation by token and displays the acceptance form
+        First, it updates any pending invitations that have expired.
+        Then, it retrieves the invitation by token and displays the acceptance form
         if the invitation is valid and not expired.
 
         Args:
@@ -238,6 +274,9 @@ class AcceptInvitationView(View):
         Returns:
             HttpResponse: The rendered template or a redirect to login if expired.
         """
+        # Update expired invitations
+        TenantInvitation.update_expired_invitations()
+
         invitation = get_object_or_404(
             TenantInvitation, token=token, status=TenantInvitation.StatusChoices.PENDING
         )
@@ -253,7 +292,8 @@ class AcceptInvitationView(View):
         """
         Handle POST requests to process the invitation acceptance.
 
-        Retrieves the invitation by token, creates or updates the user account,
+        First, it updates any pending invitations that have expired.
+        Then, it retrieves the invitation by token, creates or updates the user account,
         and marks the invitation as accepted.
 
         Args:
@@ -263,6 +303,9 @@ class AcceptInvitationView(View):
         Returns:
             HttpResponse: Redirect to login page after successful processing.
         """
+        # Update expired invitations
+        TenantInvitation.update_expired_invitations()
+
         invitation = get_object_or_404(
             TenantInvitation, token=token, status=TenantInvitation.StatusChoices.PENDING
         )
