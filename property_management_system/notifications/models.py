@@ -62,6 +62,25 @@ class TenantInvitation(models.Model):
         choices=StatusChoices.choices, default=StatusChoices.PENDING
     )
 
+    @classmethod
+    def update_expired_invitations(cls):
+        """
+        Update the status of all expired invitations from PENDING to EXPIRED.
+
+        This method finds all pending invitations that have passed their
+        expiration date and updates their status to EXPIRED.
+
+        Returns:
+            int: The number of invitations that were updated.
+        """
+        now = timezone.now()
+        expired_invitations = cls.objects.filter(
+            status=cls.StatusChoices.PENDING, expires_at__lt=now
+        )
+        count = expired_invitations.count()
+        expired_invitations.update(status=cls.StatusChoices.EXPIRED)
+        return count
+
     def __str__(self):
         """Return a string representation of the invitation."""
         return f"Zaproszenie dla {self.email} - {self.property_unit}"

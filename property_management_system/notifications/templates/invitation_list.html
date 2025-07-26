@@ -61,6 +61,17 @@
                     <a href="#" class="text-danger font-weight-bold text-xs cancel-invitation" data-id="{{ invitation.id }}" data-toggle="tooltip" data-original-title="Cancel invitation">
                       <i class="fas fa-trash"></i> Delete
                     </a>
+                    {% elif invitation.status == 4 %}
+                    <a href="{% url 'send_invitation' %}?resend={{ invitation.id }}" class="text-info font-weight-bold text-xs me-2" data-toggle="tooltip" data-original-title="Resend invitation">
+                      <i class="fas fa-paper-plane"></i> Resend
+                    </a>
+                    <a href="#" class="text-danger font-weight-bold text-xs cancel-invitation" data-id="{{ invitation.id }}" data-toggle="tooltip" data-original-title="Cancel invitation">
+                      <i class="fas fa-trash"></i> Delete
+                    </a>
+                    {% elif invitation.status == 2 %}
+                    <a href="#" class="text-danger font-weight-bold text-xs cancel-invitation" data-id="{{ invitation.id }}" data-toggle="tooltip" data-original-title="Cancel invitation">
+                      <i class="fas fa-trash"></i> Delete
+                    </a>
                     {% endif %}
                   </td>
                 </tr>
