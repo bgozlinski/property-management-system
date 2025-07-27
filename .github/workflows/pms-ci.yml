@@ -39,6 +39,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run Tests
       run: |
+        cd property_management_system
         python manage.py test
       env:
         DB_NAME: ${{ vars.DB_NAME }}
@@ -48,11 +49,11 @@ jobs:
         DB_USER: ${{ vars.DB_USER }}
     - name: Run Bandit
       run: |
-        bandit -r property_management_system
+        bandit -r .
     - name: Run Safety
       run: |
         safety check
       continue-on-error: true
     - name: Run Ruff
       run: |
-          ruff check property_management_system
+          ruff check .
