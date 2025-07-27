@@ -61,6 +61,7 @@ jobs:
         DB_USER: ${{ vars.DB_USER }}
     - name: Run Bandit
       run: |
+        pip install bandit
         bandit -r .
     - name: Run Safety
       run: |
@@ -68,4 +69,5 @@ jobs:
       continue-on-error: true
     - name: Run Ruff
       run: |
+          pip install ruff
           ruff check .
