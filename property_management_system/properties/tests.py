@@ -1,10 +1,11 @@
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from .models import Property
 from .forms import PropertyForm
 from users.factories import LandlordFactory
 from properties.factories import PropertyFactory
+from http import HTTPStatus
 
 User = get_user_model()
 
@@ -74,13 +75,14 @@ class PropertyViewsTest(TestCase):
         self.landlord = LandlordFactory.create()
         self.user = self.landlord.user
         self.property = PropertyFactory.create(landlord=self.landlord)
-        self.client = Client()
-        self.client.login(email=self.user.email, password="password123")
+        # self.client = Client()
+        # self.client.login(email=self.user.email, password="password123")
+        self.client.force_login(self.user)
 
     def test_property_list_view(self):
         """Test the property_list view"""
         response = self.client.get(reverse("property_list"))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertTemplateUsed(response, "property_list.html")
         self.assertEqual(len(response.context["properties"]), 1)
         self.assertIsInstance(response.context["form"], PropertyForm)

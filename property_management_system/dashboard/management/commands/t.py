@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.db import transaction
 import random
+from typing import Type
 from datetime import timedelta
 from users.factories import TenantFactory, LandlordFactory
 from properties.factories import PropertyFactory
@@ -68,7 +69,7 @@ class Command(BaseCommand):
             invitations,
         )
 
-    def create_landlords(self, num_landlords):
+    def create_landlords(self, num_landlords: int) -> list[Type[Landlord]]:
         """Create landlord objects"""
         self.stdout.write(f"Creating {num_landlords} landlords...")
         landlords = []

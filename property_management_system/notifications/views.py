@@ -222,7 +222,7 @@ class TenantInvitationListView(LoginRequiredMixin, LandlordRequiredMixin, ListVi
             QuerySet: Filtered queryset of invitations.
         """
         # Update expired invitations
-        TenantInvitation.update_expired_invitations()
+        TenantInvitation.update_expired_invitations()  # TODO celery in the future.
 
         # Return invitations for the current landlord
         return TenantInvitation.objects.filter(landlord=self.request.user).order_by(
