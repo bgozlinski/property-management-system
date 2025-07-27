@@ -62,7 +62,7 @@ jobs:
     - name: Run Bandit
       run: |
         pip install bandit
-        bandit -r .
+        bandit -r . -c pyproject.toml
     - name: Run Safety
       run: |
         safety check
