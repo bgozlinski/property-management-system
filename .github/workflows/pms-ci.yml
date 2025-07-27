@@ -43,6 +43,12 @@ jobs:
       run: |
         cd property_management_system
         python manage.py migrate
+      env:
+        DB_NAME: ${{ vars.DB_NAME }}
+        DB_HOST: ${{ vars.DB_HOST }}
+        DB_PORT: ${{ vars.DB_PORT }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_USER: ${{ vars.DB_USER
     - name: Run Tests
       run: |
         cd property_management_system
