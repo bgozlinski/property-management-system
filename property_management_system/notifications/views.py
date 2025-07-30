@@ -10,7 +10,7 @@ from django.views.generic import CreateView, UpdateView, DeleteView, FormView, L
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Reminder, TenantInvitation
 from .forms import TenantInvitationForm, ReminderForm
-from users.models import CustomUser, Tenant
+from users.models import CustomUser, Tenant, Landlord
 from properties.models import Property
 
 from django.utils.translation import gettext as _
@@ -37,13 +37,43 @@ class LandlordRequiredMixin(UserPassesTestMixin):
         Test if the current user is a landlord.
 
         Returns:
-            bool: True if the user is authenticated and has the LANDLORD role,
-                 False otherwise.
+            bool: True if the user is authenticated, has the LANDLORD role,
+                 and has an associated Landlord record, False otherwise.
+
+        If the user has the LANDLORD role but doesn't have a Landlord record,
+        a Landlord record will be automatically created for them.
         """
-        return (
+        if not (
             self.request.user.is_authenticated
             and self.request.user.role == CustomUser.RoleChoices.LANDLORD
-        )
+        ):
+            return False
+
+        try:
+            landlord = self.request.user.landlord
+            if landlord is None:
+                Landlord.objects.create(
+                    user=self.request.user,
+                    name=f"Landlord {self.request.user.email}",
+                    contact_info="Please update your contact information",
+                )
+                messages.success(
+                    self.request,
+                    "A landlord profile has been automatically created for you.",
+                )
+                return True
+            return True
+        except (AttributeError, Exception):
+            Landlord.objects.create(
+                user=self.request.user,
+                name=f"Landlord {self.request.user.email}",
+                contact_info="Please update your contact information",
+            )
+            messages.success(
+                self.request,
+                "A landlord profile has been automatically created for you.",
+            )
+            return True
 
 
 class SendInvitationView(LoginRequiredMixin, LandlordRequiredMixin, FormView):
