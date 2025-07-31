@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages | Property Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+          <h6>Messages</h6>
+          <a href="{% url 'new_message' %}" class="btn btn-primary btn-sm">New Message</a>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <div class="table-responsive p-0">
+            {% if conversations %}
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">User</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Last Message</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Unread</th>
+                    <th class="text-secondary opacity-7"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for conversation in conversations %}
+                    <tr>
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div>
+                            <i class="fas fa-user-circle fa-2x me-3"></i>
+                          </div>
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm">{{ conversation.user.email }}</h6>
+                            <p class="text-xs text-secondary mb-0">
+                              {% if conversation.user.role == 1 %}
+                                Tenant
+                              {% elif conversation.user.role == 2 %}
+                                Landlord
+                              {% else %}
+                                Administrator
+                              {% endif %}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <p class="text-xs font-weight-bold mb-0">
+                          {% if conversation.last_message %}
+                            {{ conversation.last_message.content|truncatechars:50 }}
+                          {% else %}
+                            No messages yet
+                          {% endif %}
+                        </p>
+                        <p class="text-xs text-secondary mb-0">
+                          {% if conversation.last_message %}
+                            {{ conversation.last_message.timestamp|date:"M d, Y" }} at {{ conversation.last_message.timestamp|time:"H:i" }}
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td class="align-middle text-center">
+                        {% if conversation.unread_count > 0 %}
+                          <span class="badge badge-sm bg-gradient-success">{{ conversation.unread_count }}</span>
+                        {% else %}
+                          <span class="text-secondary text-xs font-weight-bold">0</span>
+                        {% endif %}
+                      </td>
+                      <td class="align-middle">
+                        <a href="{% url 'conversation' conversation.user.id %}" class="btn btn-primary btn-sm" data-toggle="tooltip" data-original-title="View conversation">
+                          View
+                        </a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            {% else %}
+              <div class="text-center py-5">
+                <p class="text-secondary mb-3">You don't have any messages yet.</p>
+                <a href="{% url 'new_message' %}" class="btn btn-primary btn-sm">Start a Conversation</a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
