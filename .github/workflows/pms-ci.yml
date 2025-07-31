@@ -65,6 +65,7 @@ jobs:
         bandit -r . -c pyproject.toml
     - name: Run Safety
       run: |
+        pip install safety
         safety check
       continue-on-error: true
     - name: Run Ruff
