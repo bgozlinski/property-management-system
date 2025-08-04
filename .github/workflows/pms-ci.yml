@@ -61,7 +61,7 @@ jobs:
         DB_USER: ${{ vars.DB_USER }}
     - name: Install Actions dependencies
       run: |
-          pip install bandit && safety && ruff
+          pip install bandit safety ruff
     - name: Run Bandit
       run: |
         bandit -r . -c pyproject.toml
