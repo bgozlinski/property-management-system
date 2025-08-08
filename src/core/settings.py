@@ -5,7 +5,7 @@ from .env import env
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-env.read_env(os.path.join(BASE_DIR, ".env"))
+env.read_env(os.path.join(BASE_DIR.parent, ".env"))
 
 SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
 
