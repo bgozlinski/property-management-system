@@ -1,4 +1,4 @@
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordResetForm, PasswordChangeForm, SetPasswordForm
 from django import forms
 from .models import CustomUser
 
@@ -44,3 +44,63 @@ class CustomUserChangeForm(UserChangeForm):
 
         model = CustomUser
         fields = ("email",)
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    """Password reset form that shows an error if email does not exist in DB and styles the input like login form."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        email = self.fields.get("email")
+        if email:
+            email.widget.attrs.update({
+                "class": "form-control",
+                "placeholder": "Email",
+                "aria-label": "Email",
+            })
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        # Case-insensitive match against our CustomUser model
+        if not CustomUser.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("Provided email does not exist.")
+        return email
+
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    """Password change form styled like the login form inputs."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        field_settings = {
+            "old_password": ("Current password", "Password"),
+            "new_password1": ("New password", "Password"),
+            "new_password2": ("Confirm new password", "Password"),
+        }
+        for name, (placeholder, aria_label) in field_settings.items():
+            field = self.fields.get(name)
+            if field:
+                field.widget.attrs.update({
+                    "class": "form-control",
+                    "placeholder": placeholder,
+                    "aria-label": aria_label,
+                })
+
+
+class CustomSetPasswordForm(SetPasswordForm):
+    """Set-password form (reset confirm) styled like the login form inputs."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        field_settings = {
+            "new_password1": ("New password", "Password"),
+            "new_password2": ("Confirm new password", "Password"),
+        }
+        for name, (placeholder, aria_label) in field_settings.items():
+            field = self.fields.get(name)
+            if field:
+                field.widget.attrs.update({
+                    "class": "form-control",
+                    "placeholder": placeholder,
+                    "aria-label": aria_label,
+                })
