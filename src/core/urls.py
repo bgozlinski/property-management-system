@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from debug_toolbar.toolbar import debug_toolbar_urls
 
 
 urlpatterns = [
@@ -11,6 +12,9 @@ urlpatterns = [
     path("properties/", include("properties.urls")),
     path("notifications/", include("notifications.urls")),
     path("messages/", include("messaging.urls")),
+
 ]
+
+urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))] + debug_toolbar_urls()
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
