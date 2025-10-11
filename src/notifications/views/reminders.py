@@ -75,6 +75,7 @@ class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
 
 
 class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
+    context_object_name = "reminder"
     """
     View for updating an existing reminder.
 
