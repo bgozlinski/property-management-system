@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Unit Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="mb-0">Unit: {{ unit.number }} — {{ unit.building.name }}</h6>
+            <small class="text-muted">Area: {{ unit.area_m2 }} m² • Type: {{ unit.get_unit_type_display }} • Status: {{ unit.get_status_display }}</small>
+          </div>
+          <div>
+            <a href="{% url 'building_detail' unit.building.id %}" class="btn btn-secondary btn-sm me-2"><i class="fas fa-arrow-left me-1"></i>Back</a>
+            <a href="{% url 'edit_unit' unit.id %}" class="btn btn-outline-secondary btn-sm me-2"><i class="fas fa-edit me-1"></i>Edit</a>
+            <a href="{% url 'delete_unit' unit.id %}" class="btn btn-outline-danger btn-sm me-2"><i class="fas fa-trash me-1"></i>Delete</a>
+            <a href="#" data-modal-target="addEquipmentModal" data-unit-id="{{ unit.id }}" class="btn btn-primary btn-sm me-2"><i class="fas fa-tools me-2"></i>Add Equipment</a>
+            <a href="#" data-modal-target="addMeterModal" data-unit-id="{{ unit.id }}" class="btn btn-primary btn-sm"><i class="fas fa-tachometer-alt me-2"></i>Add Meter</a>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="row g-0">
+            <div class="col-12 col-lg-6 border-end">
+              <div class="p-3">
+                <h6 class="mb-3">Equipment</h6>
+                <div class="table-responsive">
+                  <table class="table align-items-center mb-0">
+                    <thead>
+                      <tr>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Serial</th>
+                        <th class="text-secondary opacity-7">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for e in equipment %}
+                      <tr>
+                        <td>{{ e.name }}</td>
+                        <td>{% if e.serial_number %}{{ e.serial_number }}{% else %}-{% endif %}</td>
+                        <td>
+                          <a class="text-secondary me-3" href="{% url 'edit_equipment' e.id %}"><i class="fas fa-edit"></i> Edit</a>
+                          <a class="text-danger" href="{% url 'delete_equipment' e.id %}"><i class="fas fa-trash"></i> Delete</a>
+                        </td>
+                      </tr>
+                      {% empty %}
+                      <tr><td colspan="3" class="text-center py-3">No equipment yet.</td></tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6">
+              <div class="p-3">
+                <h6 class="mb-3">Meters</h6>
+                <div class="table-responsive">
+                  <table class="table align-items-center mb-0">
+                    <thead>
+                      <tr>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
+                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Serial</th>
+                        <th class="text-secondary opacity-7">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for m in meters %}
+                      <tr>
+                        <td>{{ m.get_meter_type_display }}</td>
+                        <td>{{ m.serial }}</td>
+                        <td>
+                          <a class="text-secondary me-3" href="{% url 'edit_meter' m.id %}"><i class="fas fa-edit"></i> Edit</a>
+                          <a class="text-danger" href="{% url 'delete_meter' m.id %}"><i class="fas fa-trash"></i> Delete</a>
+                        </td>
+                      </tr>
+                      {% empty %}
+                      <tr><td colspan="3" class="text-center py-3">No meters yet.</td></tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Add Equipment Modal -->
+<div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'add_equipment' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Add Equipment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {{ equipment_form.as_p }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Meter Modal -->
+<div class="modal fade" id="addMeterModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'add_meter' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Add Meter</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {{ meter_form.as_p }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  document.addEventListener('click', function (e) {
+    const trigger = e.target.closest('[data-modal-target]');
+    if (!trigger) return;
+    e.preventDefault();
+    const targetId = trigger.getAttribute('data-modal-target');
+    const modalEl = document.getElementById(targetId);
+    if (!modalEl) return;
+    const unitId = trigger.getAttribute('data-unit-id');
+    if (unitId) {
+      const unitSelect = modalEl.querySelector('select[name="unit"]');
+      if (unitSelect) unitSelect.value = unitId;
+    }
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  });
+</script>
+{% endblock %}
+
+{% endblock %}

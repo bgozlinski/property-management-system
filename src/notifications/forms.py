@@ -70,12 +70,12 @@ class ReminderForm(forms.ModelForm):
         """
 
         model = Reminder
-        fields = ["title", "description", "due_date", "property"]
+        fields = ["title", "description", "due_date", "unit"]
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control"}),
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
             "due_date": forms.DateInput(
                 attrs={"class": "form-control", "type": "date"}
             ),
-            "property": forms.Select(attrs={"class": "form-control"}),
+            "unit": forms.Select(attrs={"class": "form-control"}),
         }

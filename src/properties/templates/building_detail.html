@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Building Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="mb-0">Building: {{ building.name }}</h6>
+            <small class="text-muted">{{ building.address }}, {{ building.city }} {{ building.postal_code }}</small>
+          </div>
+          <div>
+            <a href="{% url 'property_list' %}" class="btn btn-secondary btn-sm me-2"><i class="fas fa-arrow-left me-1"></i>Back</a>
+            <a href="{% url 'edit_building' building.id %}" class="btn btn-outline-secondary btn-sm me-2"><i class="fas fa-edit me-1"></i>Edit</a>
+            <a href="{% url 'delete_building' building.id %}" class="btn btn-outline-danger btn-sm me-2"><i class="fas fa-trash me-1"></i>Delete</a>
+            <a href="#" data-modal-target="addUnitModal" data-building-id="{{ building.id }}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-2"></i>Add Unit</a>
+          </div>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0">
+              <thead>
+              <tr>
+                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Unit</th>
+                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Area (m²)</th>
+                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Type</th>
+                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
+                <th class="text-secondary opacity-7">Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for u in units %}
+                <tr>
+                  <td><a href="{% url 'unit_detail' u.id %}">{{ u.number }}</a></td>
+                  <td>{{ u.area_m2 }}</td>
+                  <td>{{ u.get_unit_type_display }}</td>
+                  <td>{{ u.get_status_display }}</td>
+                  <td>
+                    <a class="text-info me-3" href="{% url 'unit_detail' u.id %}"><i class="fas fa-list"></i> View</a>
+                    <a class="text-primary me-3" href="#" data-modal-target="addEquipmentModal" data-unit-id="{{ u.id }}"><i class="fas fa-tools"></i> Add Equipment</a>
+                    <a class="text-primary me-3" href="#" data-modal-target="addMeterModal" data-unit-id="{{ u.id }}"><i class="fas fa-tachometer-alt"></i> Add Meter</a>
+                    <a class="text-secondary me-3" href="{% url 'edit_unit' u.id %}"><i class="fas fa-edit"></i> Edit</a>
+                    <a class="text-danger" href="{% url 'delete_unit' u.id %}"><i class="fas fa-trash"></i> Delete</a>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5" class="text-center py-3">No units yet. Use "Add Unit" to create one.</td></tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Add Unit Modal -->
+<div class="modal fade" id="addUnitModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'add_unit' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Add Unit</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {{ unit_form.as_p }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Equipment Modal -->
+<div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'add_equipment' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Add Equipment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {{ equipment_form.as_p }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Meter Modal -->
+<div class="modal fade" id="addMeterModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'add_meter' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Add Meter</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {{ meter_form.as_p }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  document.addEventListener('click', function (e) {
+    const trigger = e.target.closest('[data-modal-target]');
+    if (!trigger) return;
+    e.preventDefault();
+    const targetId = trigger.getAttribute('data-modal-target');
+    const modalEl = document.getElementById(targetId);
+    if (!modalEl) return;
+    const buildingId = trigger.getAttribute('data-building-id');
+    if (buildingId) {
+      const buildingSelect = modalEl.querySelector('select[name="building"]');
+      if (buildingSelect) buildingSelect.value = buildingId;
+    }
+    const unitId = trigger.getAttribute('data-unit-id');
+    if (unitId) {
+      const unitSelect = modalEl.querySelector('select[name="unit"]');
+      if (unitSelect) unitSelect.value = unitId;
+    }
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  });
+</script>
+{% endblock %}
+
+{% endblock %}

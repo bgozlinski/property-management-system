@@ -7,7 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from notifications.models import Reminder
 from notifications.forms import ReminderForm
-from properties.models import Property
+from properties.models import Unit
 from .mixins import LandlordRequiredMixin
 
 
@@ -26,20 +26,20 @@ class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
 
     def get_form(self, form_class=None):
         """
-        Get the form instance and customize the property queryset.
+        Get the form instance and customize the unit queryset.
 
-        Filters the property queryset to only show properties owned by the
+        Filters the unit queryset to only show units under buildings owned by the
         current landlord.
 
         Args:
             form_class: The form class to use, defaults to self.form_class.
 
         Returns:
-            Form: The form instance with filtered property queryset.
+            Form: The form instance with filtered unit queryset.
         """
         form = super().get_form(form_class)
-        form.fields["property"].queryset = Property.objects.filter(
-            landlord__user=self.request.user
+        form.fields["unit"].queryset = Unit.objects.filter(
+            building__landlord__user=self.request.user
         )
         return form
 
@@ -48,7 +48,7 @@ class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
         Process the valid form and create the reminder.
 
         Converts the date string to a timezone-aware datetime, verifies that
-        the property belongs to the current landlord, and creates the reminder.
+        the unit belongs to the current landlord, and creates the reminder.
 
         Args:
             form: The validated reminder form.
@@ -62,10 +62,10 @@ class ReminderCreateView(LoginRequiredMixin, LandlordRequiredMixin, CreateView):
             )
         )
 
-        property_obj = form.cleaned_data["property"]
-        if property_obj.landlord.user != self.request.user:
+        unit_obj = form.cleaned_data["unit"]
+        if unit_obj.building.landlord.user != self.request.user:
             messages.error(
-                self.request, "You can only create reminders for your own properties."
+                self.request, "You can only create reminders for your own units."
             )
             return self.form_invalid(form)
 
@@ -90,20 +90,20 @@ class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
 
     def get_form(self, form_class=None):
         """
-        Get the form instance and customize the property queryset.
+        Get the form instance and customize the unit queryset.
 
-        Filters the property queryset to only show properties owned by the
+        Filters the unit queryset to only show units under buildings owned by the
         current landlord.
 
         Args:
             form_class: The form class to use, defaults to self.form_class.
 
         Returns:
-            Form: The form instance with filtered property queryset.
+            Form: The form instance with filtered unit queryset.
         """
         form = super().get_form(form_class)
-        form.fields["property"].queryset = Property.objects.filter(
-            landlord__user=self.request.user
+        form.fields["unit"].queryset = Unit.objects.filter(
+            building__landlord__user=self.request.user
         )
         return form
 
@@ -111,7 +111,7 @@ class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
         """
         Retrieve the reminder and verify ownership.
 
-        Ensures that only the landlord who owns the property associated with
+        Ensures that only the landlord who owns the unit associated with
         the reminder can update it.
 
         Args:
@@ -121,10 +121,10 @@ class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
             Reminder: The reminder object if the user is the owner.
 
         Raises:
-            Http404: If the user is not the owner of the property.
+            Http404: If the user is not the owner of the unit.
         """
         reminder = super().get_object(queryset)
-        if reminder.property.landlord.user != self.request.user:
+        if reminder.unit.building.landlord.user != self.request.user:
             raise Http404("Reminder not found")
         return reminder
 
@@ -133,7 +133,7 @@ class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
         Process the valid form and update the reminder.
 
         Converts the date string to a timezone-aware datetime, verifies that
-        the property belongs to the current landlord, and updates the reminder.
+        the unit belongs to the current landlord, and updates the reminder.
 
         Args:
             form: The validated reminder form.
@@ -147,10 +147,10 @@ class ReminderUpdateView(LoginRequiredMixin, LandlordRequiredMixin, UpdateView):
             )
         )
 
-        property_obj = form.cleaned_data["property"]
-        if property_obj.landlord.user != self.request.user:
+        unit_obj = form.cleaned_data["unit"]
+        if unit_obj.building.landlord.user != self.request.user:
             messages.error(
-                self.request, "You can only assign reminders to your own properties."
+                self.request, "You can only assign reminders to your own units."
             )
             return self.form_invalid(form)
 
@@ -174,13 +174,13 @@ class ReminderListView(LoginRequiredMixin, LandlordRequiredMixin, ListView):
 
     def get_queryset(self):
         """
-        Filter reminders to show only those for properties owned by the current landlord.
+        Filter reminders to show only those for units under buildings owned by the current landlord.
 
         Returns:
             QuerySet: Filtered queryset of reminders.
         """
         return Reminder.objects.filter(
-            property__landlord__user=self.request.user
+            unit__building__landlord__user=self.request.user
         ).order_by("due_date")
 
     def get_context_data(self, **kwargs):
@@ -195,8 +195,8 @@ class ReminderListView(LoginRequiredMixin, LandlordRequiredMixin, ListView):
         """
         context = super().get_context_data(**kwargs)
         form = ReminderForm()
-        form.fields["property"].queryset = Property.objects.filter(
-            landlord__user=self.request.user
+        form.fields["unit"].queryset = Unit.objects.filter(
+            building__landlord__user=self.request.user
         )
         context["form"] = form
         return context
@@ -235,7 +235,7 @@ class ReminderDeleteView(LoginRequiredMixin, LandlordRequiredMixin, DeleteView):
         """
         Retrieve the reminder and verify ownership.
 
-        Ensures that only the landlord who owns the property associated with
+        Ensures that only the landlord who owns the unit associated with
         the reminder can delete it.
 
         Args:
@@ -245,10 +245,10 @@ class ReminderDeleteView(LoginRequiredMixin, LandlordRequiredMixin, DeleteView):
             Reminder: The reminder object if the user is the owner.
 
         Raises:
-            Http404: If the user is not the owner of the property.
+            Http404: If the user is not the owner of the unit.
         """
         reminder = super().get_object(queryset)
-        if reminder.property.landlord.user != self.request.user:
+        if reminder.unit.building.landlord.user != self.request.user:
             raise Http404("Reminder not found")
         return reminder
 
