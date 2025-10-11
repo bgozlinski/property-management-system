@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     # Property routes (existing)
     path('', views.PropertyListView.as_view(), name='property_list'),
+    path('add/', views.PropertyCreateView.as_view(), name='add_property'),
     path('<int:pk>/', views.PropertyDetailView.as_view(), name='property_detail'),
     path('edit/<int:pk>/', views.PropertyUpdateView.as_view(), name='edit_property'),
     path('delete/<int:pk>/', views.PropertyDeleteView.as_view(), name='delete_property'),

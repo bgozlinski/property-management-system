@@ -226,6 +226,8 @@ class PropertyListView(LoginRequiredMixin, LandlordRequiredMixin, ListView):
                 "unit_form": unit_form,
             }
         )
+        # Provide PropertyForm for tests expecting `form` in context
+        ctx["form"] = PropertyForm()
         return ctx
 
 

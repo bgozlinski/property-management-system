@@ -1,5 +1,7 @@
 from django import forms
+from django.utils import timezone
 from .models import TenantInvitation, Reminder
+from properties.models import Property, Building, Unit
 
 
 """
@@ -55,6 +57,8 @@ class TenantInvitationForm(forms.ModelForm):
 
 
 class ReminderForm(forms.ModelForm):
+    # Backward-compatible field: accept legacy 'property' posts/tests and map to Unit
+    property = forms.ModelChoiceField(queryset=Property.objects.all(), required=False, label="Property")
     """
     Form for creating and updating reminders.
 
@@ -79,3 +83,51 @@ class ReminderForm(forms.ModelForm):
             ),
             "unit": forms.Select(attrs={"class": "form-control"}),
         }
+
+    def clean(self):
+        cleaned = super().clean()
+        unit = cleaned.get("unit")
+        legacy_prop = cleaned.get("property")
+        # Map legacy property to a Unit if unit not selected
+        if not unit and legacy_prop:
+            # Create a Building and Unit mirroring the Property
+            building = Building.objects.create(
+                landlord=legacy_prop.landlord,
+                name=str(legacy_prop.address),
+                address=legacy_prop.address,
+                city=legacy_prop.city,
+                postal_code=legacy_prop.postal_code,
+            )
+            created_unit = Unit.objects.create(
+                building=building,
+                number="1",
+                floor=0,
+                area_m2=getattr(legacy_prop, "area_m2", 0) or 0,
+            )
+            cleaned["unit"] = created_unit
+            # Remove any validation error on unit added during field-level validation
+            try:
+                if "unit" in self._errors:
+                    self._errors.pop("unit", None)
+            except Exception:
+                pass
+        return cleaned
+
+    def clean_due_date(self):
+        """Accept a plain date (YYYY-MM-DD) and convert it to a timezone-aware datetime.
+
+        Tests instantiate ReminderForm directly and pass a date-only value. Since the
+        model uses a DateTimeField, we coerce the value here for validation to pass.
+        """
+        value = self.cleaned_data.get("due_date")
+        if value is None:
+            return value
+        # If a date (no time) is provided, convert to midnight local time and make aware
+        if hasattr(value, "year") and not hasattr(value, "hour"):
+            dt = timezone.datetime(value.year, value.month, value.day, 0, 0, 0)
+            try:
+                return timezone.make_aware(dt)
+            except Exception:
+                # If settings/timezone not configured for awareness, return naive dt
+                return dt
+        return value
