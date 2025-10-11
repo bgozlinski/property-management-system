@@ -106,11 +106,8 @@ class ReminderForm(forms.ModelForm):
             )
             cleaned["unit"] = created_unit
             # Remove any validation error on unit added during field-level validation
-            try:
-                if "unit" in self._errors:
-                    self._errors.pop("unit", None)
-            except Exception:
-                pass
+            if "unit" in self._errors:
+                self._errors.pop("unit", None)
         return cleaned
 
     def clean_due_date(self):
