@@ -19,7 +19,7 @@
               <thead>
                 <tr>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Title</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Property</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Address</th>
                   <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Due Date</th>
                   <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                   <th class="text-secondary opacity-7">Actions</th>
@@ -37,8 +37,7 @@
                     </div>
                   </td>
                   <td>
-                    <p class="text-xs font-weight-bold mb-0">{{ reminder.property.name }}</p>
-                    <p class="text-xs text-secondary mb-0">{{ reminder.property.address }}</p>
+                    <p class="text-xs font-weight-bold mb-0">{{ reminder.unit.building.address }} / {{ reminder.unit.number }}, {{ reminder.unit.building.city }}</p>
                   </td>
                   <td class="align-middle text-center">
                     <span class="text-secondary text-xs font-weight-bold">{{ reminder.due_date|date:"d/m/Y" }}</span>
@@ -95,8 +94,8 @@
             {{ form.description }}
           </div>
           <div class="mb-3">
-            <label for="{{ form.property.id_for_label }}" class="form-label">Property</label>
-            {{ form.property }}
+            <label for="{{ form.unit.id_for_label }}" class="form-label">Unit</label>
+            {{ form.unit }}
           </div>
           <div class="mb-3">
             <label for="{{ form.due_date.id_for_label }}" class="form-label">Due Date</label>

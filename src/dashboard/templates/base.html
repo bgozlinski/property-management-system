@@ -92,6 +92,7 @@
           </a>
         </li>
 
+
         <!-- Reminders -->
         <li class="nav-item">
           <a class="nav-link {% if request.path|slice:':22' == '/notifications/reminders/' %}active{% endif %}" href="{% url 'reminder_list' %}">
@@ -251,6 +252,7 @@
       </div>
       <div class="row">
         <div class="col-8 mx-auto text-center mt-1">
+          <div class="text-secondary text-xs mb-1">PMS Dev build active — Templates last updated: 2025-10-11</div>
           <p class="mb-0 text-secondary">
             Copyright © <script>
               document.write(new Date().getFullYear())

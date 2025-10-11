@@ -2,7 +2,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-from properties.models import Property
+from properties.models import Property, Unit
 
 
 """
@@ -15,16 +15,16 @@ for tenants to join the system.
 
 class Reminder(models.Model):
     """
-    Model representing a reminder for a property.
+    Model representing a reminder for a unit (apartment/office).
 
-    Reminders are associated with specific properties and have a due date.
+    Reminders are associated with specific units and have a due date.
     They are typically created by landlords to track important tasks or events.
     """
 
     title = models.CharField(max_length=255)
     description = models.TextField()
     due_date = models.DateTimeField()
-    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name="reminders")
 
     def __str__(self):
         """Return the title as the string representation of the reminder."""
