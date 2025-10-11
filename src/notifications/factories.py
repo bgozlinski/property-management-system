@@ -4,7 +4,7 @@ from django.utils import timezone
 from .models import Reminder, TenantInvitation
 from properties.factories import PropertyFactory
 from properties.models import Building, Unit
-from users.factories import CustomUserFactory, LandlordFactory
+from users.factories import CustomUserFactory
 
 
 """
