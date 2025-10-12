@@ -50,7 +50,7 @@ jobs:
 
     - name: Run Bandit
       run: |
-        poetry run bandit -r . -c pyproject.toml
+        poetry run bandit -r src -c pyproject.toml
     - name: Run Safety
       run: |
         poetry run safety check
