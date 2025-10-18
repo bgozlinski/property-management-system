@@ -22,6 +22,17 @@
   <link id="pagestyle" href="{% static 'core/css/soft-ui-dashboard.css' %}?v=1.1.0" rel="stylesheet" />
   <!-- Nepcha Analytics (nepcha.com) -->
   <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
+  <!-- Hide helper texts under form fields globally -->
+  <style>
+    /* Hide Bootstrap and Django helptext below form fields */
+    .form-text,
+    .helptext,
+    span.helptext,
+    div.form-text,
+    small.form-text {
+      display: none !important;
+    }
+  </style>
   {% block extra_css %}{% endblock %}
 </head>
 
@@ -84,7 +95,7 @@
         {% if user.role == 2 or user.role == 3 %}
         <!-- Properties -->
         <li class="nav-item">
-          <a class="nav-link {% if request.path|slice:':12' == '/properties/' %}active{% endif %}" href="{% url 'property_list' %}">
+          <a class="nav-link {% if request.path|slice:":12" == "/properties/" %}active{% endif %}" href="{% url 'property_list' %}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fas fa-home text-dark opacity-10" aria-hidden="true"></i>
             </div>
@@ -92,6 +103,25 @@
           </a>
         </li>
 
+        <!-- Rental Agreements -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.path|slice:':8' == '/leases/' %}active{% endif %}" href="{% url 'rentalagreement_list' %}">
+            <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="fas fa-file-signature text-dark opacity-10" aria-hidden="true"></i>
+            </div>
+            <span class="nav-link-text ms-1">Rental Agreements</span>
+          </a>
+        </li>
+
+        <!-- Payments -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.path|slice:':11' == '/payments/' %}active{% endif %}" href="{% url 'payments_monthly' %}">
+            <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="fas fa-receipt text-dark opacity-10" aria-hidden="true"></i>
+            </div>
+            <span class="nav-link-text ms-1">Payments</span>
+          </a>
+        </li>
 
         <!-- Reminders -->
         <li class="nav-item">
@@ -282,6 +312,38 @@
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="{% static 'core/js/soft-ui-dashboard.min.js' %}?v=1.1.0"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      try {
+        var inputs = document.querySelectorAll('form input:not([type=checkbox]):not([type=radio]):not([type=hidden]), form textarea');
+        inputs.forEach(function (el) {
+          if (!el.classList.contains('form-control')) {
+            el.classList.add('form-control');
+          }
+        });
+        var selects = document.querySelectorAll('form select');
+        selects.forEach(function (el) {
+          if (!el.classList.contains('form-select')) {
+            el.classList.add('form-select');
+          }
+        });
+        var checks = document.querySelectorAll('form input[type=checkbox], form input[type=radio]');
+        checks.forEach(function (el) {
+          if (!el.classList.contains('form-check-input')) {
+            el.classList.add('form-check-input');
+          }
+        });
+        var labels = document.querySelectorAll('form label');
+        labels.forEach(function (el) {
+          if (!el.classList.contains('form-label')) {
+            el.classList.add('form-label');
+          }
+        });
+      } catch (e) {
+        console.warn('Form styling script error', e);
+      }
+    });
+  </script>
   {% block extra_js %}{% endblock %}
 </body>
 
