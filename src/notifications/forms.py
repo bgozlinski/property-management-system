@@ -30,7 +30,7 @@ class TenantInvitationForm(forms.ModelForm):
         fields = ["email", "property_unit"]
         labels = {
             "email": "Tenant email address",
-            "property_unit": "Property",
+            "property_unit": "Unit",
         }
         help_texts = {
             "email": "Enter the email address of the future tenant",
@@ -51,9 +51,10 @@ class TenantInvitationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if landlord:
+            # Limit to Units belonging to buildings owned by the landlord
             self.fields["property_unit"].queryset = self.fields[
                 "property_unit"
-            ].queryset.filter(landlord__user=landlord)
+            ].queryset.filter(building__landlord__user=landlord)
 
 
 class ReminderForm(forms.ModelForm):

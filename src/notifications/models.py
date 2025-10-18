@@ -49,7 +49,7 @@ class TenantInvitation(models.Model):
         EXPIRED = 4, "Expired"
 
     email = models.EmailField()
-    property_unit = models.ForeignKey(Property, on_delete=models.CASCADE)
+    property_unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
     landlord = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

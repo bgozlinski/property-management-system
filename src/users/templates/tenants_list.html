@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Tenants{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+          <h6>Tenants</h6>
+          <div class="d-flex gap-2">
+            <a href="{% url 'invitation_list' %}" class="btn btn-outline-secondary btn-sm">
+              <i class="fas fa-envelope-open-text me-2"></i> View Invitations
+            </a>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#inviteTenantModal">
+              <i class="fas fa-user-plus me-2"></i> Invite Tenant
+            </button>
+          </div>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Unit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for tenant in object_list %}
+                <tr>
+                  <td>
+                    <div class="d-flex px-2 py-1">
+                      <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm">{{ tenant.name }}</h6>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <p class="text-xs font-weight-bold mb-0">{{ tenant.user.email }}</p>
+                  </td>
+                  <td>
+                    {% with ra=tenant.rentalagreement_set.first %}
+                      {% if ra and ra.unit %}
+                        <span class="text-xs">Unit {{ ra.unit.number }}, {{ ra.unit.building.address }}, {{ ra.unit.building.city }}</span>
+                      {% elif ra and ra.property %}
+                        <span class="text-xs">{{ ra.property.address }}, {{ ra.property.city }}</span>
+                      {% else %}
+                        <span class="text-xs text-secondary">-</span>
+                      {% endif %}
+                    {% endwith %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="3" class="text-center py-4">
+                    <p class="text-secondary mb-0">No tenants to display yet.</p>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Invite Tenant Modal -->
+<div class="modal fade" id="inviteTenantModal" tabindex="-1" aria-labelledby="inviteTenantModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="inviteTenantModalLabel">Invite Tenant</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'send_invitation' %}">
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            {{ form.email }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Unit</label>
+            {{ form.property_unit }}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Send Invitation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const formFields = document.querySelectorAll('#inviteTenantModal form input, #inviteTenantModal form select');
+    formFields.forEach(field => field.classList.add('form-control'));
+  });
+</script>
+{% endblock %}

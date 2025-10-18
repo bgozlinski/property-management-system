@@ -103,7 +103,8 @@ class TenantInvitationFactory(factory.django.DjangoModelFactory):
         model = TenantInvitation
 
     email = factory.Faker("email")
-    property_unit = factory.SubFactory(PropertyFactory)
+    # For backward compatibility, map a generated Property to a Unit
+    property_unit = factory.LazyFunction(lambda: _ensure_unit_from_property(PropertyFactory()))
     landlord = factory.SubFactory(CustomUserFactory, role=2)
     created_at = factory.LazyFunction(timezone.now)
     expires_at = factory.LazyFunction(lambda: timezone.now() + timezone.timedelta(days=7))

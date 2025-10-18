@@ -133,13 +133,13 @@
           </a>
         </li>
 
-        <!-- Invite Tenant -->
+        <!-- Tenants -->
         <li class="nav-item">
-          <a class="nav-link {% if request.path == '/notifications/invitations/' %}active{% endif %}" href="{% url 'invitation_list' %}">
+          <a class="nav-link {% if request.path|slice:':9' == '/tenants/' %}active{% endif %}" href="{% url 'tenant_list' %}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="fas fa-user-plus text-dark opacity-10" aria-hidden="true"></i>
+              <i class="fas fa-users text-dark opacity-10" aria-hidden="true"></i>
             </div>
-            <span class="nav-link-text ms-1">Invite Tenant</span>
+            <span class="nav-link-text ms-1">Tenants</span>
           </a>
         </li>
         {% endif %}
