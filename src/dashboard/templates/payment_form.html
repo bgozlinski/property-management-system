@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit Payment{% else %}Add Payment{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12 col-lg-8">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+          <h6>{% if form.instance.pk %}Edit Payment{% else %}Add Payment{% endif %}</h6>
+          <a href="{% url 'payments_monthly' %}" class="btn btn-sm btn-secondary">Back to Monthly</a>
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            {% for field in form %}
+              <div class="mb-3">
+                <label class="form-label" for="id_{{ field.name }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                  <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary">Save Payment</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function() {
+    function fillFromAgreement(raId) {
+      if (!raId) return;
+      fetch(`/leases/${raId}/details.json`, {headers: {"X-Requested-With": "XMLHttpRequest"}})
+        .then(function(resp){ if (!resp.ok) throw new Error('Failed to load agreement'); return resp.json(); })
+        .then(function(data){
+          var setVal = function(id, val){ var el = document.getElementById(id); if (el) { el.value = (val != null ? val : 0); el.dispatchEvent(new Event('change')); } };
+          setVal('id_base_rent', data.base_rent);
+          setVal('id_coop_fee', data.coop_fee);
+          setVal('id_electricity', data.electricity);
+          setVal('id_gas', data.gas);
+          setVal('id_other_fees', data.other_fees);
+          // water is not part of agreement; leave as is
+        })
+        .catch(function(err){ console.warn(err); });
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+      var raSelect = document.getElementById('id_rental_agreement');
+      if (!raSelect) return;
+      // Auto-fill when rental agreement changes
+      raSelect.addEventListener('change', function(){ fillFromAgreement(this.value); });
+      // If preselected, fill initially
+      if (raSelect.value) { fillFromAgreement(raSelect.value); }
+    });
+  })();
+</script>
+{% endblock %}

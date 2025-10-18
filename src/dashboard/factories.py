@@ -14,14 +14,13 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     base_rent = factory.Faker("pyfloat", min_value=500, max_value=5000)
     coop_fee = factory.Faker("pyfloat", min_value=50, max_value=500)
     electricity = factory.Faker("pyfloat", min_value=20, max_value=200)
-    water = factory.Faker("pyfloat", min_value=10, max_value=100)
+    water = 0.0
     gas = factory.Faker("pyfloat", min_value=10, max_value=100)
     other_fees = factory.Faker("pyfloat", min_value=0, max_value=200)
     total_amount = factory.LazyAttribute(
         lambda o: o.base_rent
         + o.coop_fee
         + o.electricity
-        + o.water
         + o.gas
         + o.other_fees
     )
