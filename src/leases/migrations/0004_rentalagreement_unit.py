@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("leases", "0003_update_rentalagreement_fields"),
-        ("properties", "0001_initial"),
+        ("properties", "0002_building_unit_equipment_meter_meterreading"),
     ]
 
     operations = [
