@@ -1,7 +1,18 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.db import transaction
-import random
+from typing import Type
+from datetime import timedelta
+
+# Use cryptographically secure randomness to satisfy Bandit B311 in this data generator.
+# While we do not need cryptographic security for sample data, using secrets avoids linter warnings.
+from secrets import choice as secure_choice, randbelow as _secure_randbelow
+
+def secure_randint(a: int, b: int) -> int:
+    """Return a random integer N such that a <= N <= b using secrets.randbelow."""
+    if b < a:
+        raise ValueError("upper bound must be >= lower bound")
+    return a + _secure_randbelow((b - a) + 1)
 from typing import Type
 from datetime import timedelta
 from users.factories import TenantFactory, LandlordFactory
@@ -86,10 +97,10 @@ class Command(BaseCommand):
         self.stdout.write(f"Creating {num_properties} properties...")
         properties = []
         for i in range(num_properties):
-            landlord = random.choice(landlords)
+            landlord = secure_choice(landlords)
             property = PropertyFactory.create(
                 landlord=landlord,
-                status=random.choice(
+                status=secure_choice(
                     [
                         Property.StatusChoices.AVAILABLE,
                         Property.StatusChoices.RENTED,
@@ -123,9 +134,9 @@ class Command(BaseCommand):
         ]
 
         for property in rented_properties:
-            tenant = random.choice(tenants)
-            start_date = timezone.now().date() - timedelta(days=random.randint(30, 365))
-            end_date = start_date + timedelta(days=random.randint(180, 730))
+            tenant = secure_choice(tenants)
+            start_date = timezone.now().date() - timedelta(days=secure_randint(30, 365))
+            end_date = start_date + timedelta(days=secure_randint(180, 730))
 
             agreement = RentalAgreementFactory.create(
                 property=property,
@@ -145,12 +156,12 @@ class Command(BaseCommand):
         """Create maintenance request objects"""
         self.stdout.write("Creating maintenance requests...")
         maintenance_requests = []
-        for _ in range(random.randint(10, 30)):
+        for _ in range(secure_randint(10, 30)):
             if not rental_agreements:
                 break
 
-            agreement = random.choice(rental_agreements)
-            status = random.choice(list(MaintenanceRequest.StatusChoices))
+            agreement = secure_choice(rental_agreements)
+            status = secure_choice(list(MaintenanceRequest.StatusChoices))
 
             request = MaintenanceRequestFactory.create(
                 property=agreement.property,
@@ -184,12 +195,12 @@ class Command(BaseCommand):
     def create_payments_for_agreement(self, agreement):
         """Create payment objects for a specific rental agreement"""
         payments = []
-        for i in range(1, random.randint(3, 12)):
+        for i in range(1, secure_randint(3, 12)):
             date_due = agreement.start_date + timedelta(days=30 * i)
             if date_due > timezone.now().date():
                 continue
 
-            status = random.choice(
+            status = secure_choice(
                 [
                     Payment.StatusChoices.PAID,
                     Payment.StatusChoices.PAID,
@@ -198,7 +209,7 @@ class Command(BaseCommand):
             )
 
             date_paid = (
-                date_due + timedelta(days=random.randint(-5, 15))
+                date_due + timedelta(days=secure_randint(-5, 15))
                 if status == Payment.StatusChoices.PAID
                 else None
             )
@@ -236,10 +247,10 @@ class Command(BaseCommand):
         for landlord in landlords:
             landlord_properties = [p for p in properties if p.landlord == landlord]
             for property in landlord_properties:
-                for _ in range(random.randint(0, 3)):
+                for _ in range(secure_randint(0, 3)):
                     reminder = ReminderFactory.create(
                         property=property,
-                        due_date=timezone.now() + timedelta(days=random.randint(1, 90)),
+                        due_date=timezone.now() + timedelta(days=secure_randint(1, 90)),
                     )
                     reminders.append(reminder)
 
@@ -255,7 +266,7 @@ class Command(BaseCommand):
         ]
 
         for property in available_properties[: min(10, len(available_properties))]:
-            status = random.choice(list(TenantInvitation.StatusChoices))
+            status = secure_choice(list(TenantInvitation.StatusChoices))
 
             invitation = TenantInvitationFactory.create(
                 property_unit=property, landlord=property.landlord.user, status=status
