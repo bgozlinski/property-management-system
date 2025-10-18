@@ -10,6 +10,7 @@ urlpatterns = [
     path("", include("dashboard.urls")),
     path("", include("users.urls")),
     path("properties/", include("properties.urls")),
+    path("leases/", include("leases.urls")),
     path("notifications/", include("notifications.urls")),
     path("messages/", include("messaging.urls")),
 
