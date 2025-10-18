@@ -70,6 +70,34 @@ class PaymentsMonthlyView(TemplateView):
         return ctx
 
 
+class TenantPaymentsView(TemplateView):
+    template_name = 'payments_tenant.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        user = getattr(self.request, 'user', None)
+        payments = []
+        tenant = None
+        if user and user.is_authenticated and getattr(user, 'role', None) == 1:
+            # Load payments for the logged-in tenant
+            from users.models import Tenant as TenantModel
+            try:
+                tenant = TenantModel.objects.select_related('user').get(user=user)
+            except TenantModel.DoesNotExist:
+                tenant = None
+            if tenant:
+                payments = (
+                    Payment.objects.select_related('rental_agreement')
+                    .filter(rental_agreement__tenant=tenant)
+                    .order_by('-date_due')
+                )
+        ctx.update({
+            'tenant': tenant,
+            'payments': payments,
+        })
+        return ctx
+
+
 class PaymentCreateView(CreateView):
     model = Payment
     form_class = PaymentForm
