@@ -9,6 +9,8 @@ from properties.models import Property
 from django.urls import reverse_lazy
 from django.views.generic import FormView
 from django.views.generic import TemplateView
+from django.views import View
+from django.shortcuts import redirect
 
 
 """
@@ -121,6 +123,18 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         elif user.role == CustomUser.RoleChoices.ADMINISTRATOR:
             role_name = "Administrator"
 
+        # Build a profile form for modal editing
+        profile_form = None
+        try:
+            if user.role == CustomUser.RoleChoices.TENANT and profile_data:
+                from .forms import TenantProfileForm
+                profile_form = TenantProfileForm(instance=profile_data)
+            elif user.role == CustomUser.RoleChoices.LANDLORD and profile_data:
+                from .forms import LandlordProfileForm
+                profile_form = LandlordProfileForm(instance=profile_data)
+        except Exception:
+            profile_form = None
+
         context.update(
             {
                 "user": user,
@@ -129,7 +143,43 @@ class ProfileView(LoginRequiredMixin, TemplateView):
                 "reminders": reminders,
                 "landlord_properties": landlord_properties,
                 "current_date": timezone.now(),
+                "profile_form": profile_form,
             }
         )
 
         return context
+
+
+
+class ProfileUpdateView(LoginRequiredMixin, View):
+    """Handle profile updates from the Profile page modal."""
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        from .forms import TenantProfileForm, LandlordProfileForm
+        try:
+            if user.role == CustomUser.RoleChoices.TENANT:
+                instance = Tenant.objects.get(user=user)
+                form = TenantProfileForm(request.POST, instance=instance)
+            elif user.role == CustomUser.RoleChoices.LANDLORD:
+                instance = Landlord.objects.get(user=user)
+                form = LandlordProfileForm(request.POST, instance=instance)
+            else:
+                messages.error(request, "Administrators don't have an editable profile here.")
+                return redirect("profile")
+        except (Tenant.DoesNotExist, Landlord.DoesNotExist):
+            messages.error(request, "Profile not found to update.")
+            return redirect("profile")
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully.")
+        else:
+            # Surface first error succinctly
+            first_err = next(iter(form.errors.values()))[0] if form.errors else "Validation error"
+            messages.error(request, f"Could not update profile: {first_err}")
+        return redirect("profile")
+
+    def get(self, request, *args, **kwargs):
+        # Editing is done via modal on the main profile page; redirect if accessed directly.
+        return redirect("profile")
