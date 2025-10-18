@@ -4,13 +4,18 @@ from .forms import CustomUserCreationForm
 from django.utils import timezone
 
 from .models import CustomUser, Tenant, Landlord
-from notifications.models import Reminder
+from notifications.models import Reminder, TenantInvitation
 from properties.models import Property
 from django.urls import reverse_lazy
 from django.views.generic import FormView
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView
 from django.views import View
 from django.shortcuts import redirect
+from django.db.models import Q
+
+from notifications.forms import TenantInvitationForm
+from notifications.views.mixins import LandlordRequiredMixin
+from leases.models import RentalAgreement
 
 
 """
@@ -114,7 +119,7 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 
                 if landlord_properties.exists():
                     reminders = Reminder.objects.filter(
-                        property__in=landlord_properties
+                        unit__building__landlord=profile_data
                     ).order_by("due_date")
 
             except Landlord.DoesNotExist:
@@ -149,6 +154,34 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 
         return context
 
+
+
+class TenantListView(LoginRequiredMixin, LandlordRequiredMixin, ListView):
+    template_name = "tenants_list.html"
+    model = Tenant
+
+    def get_queryset(self):
+        user = self.request.user
+        # Tenants linked via RentalAgreements to landlord's properties or units
+        # plus tenants who accepted an invitation from this landlord (even without agreements yet)
+        accepted_invited_emails = TenantInvitation.objects.filter(
+            landlord=user,
+            status=TenantInvitation.StatusChoices.ACCEPTED,
+        ).values_list("email", flat=True)
+        return (
+            Tenant.objects.filter(
+                Q(rentalagreement__property__landlord__user=user)
+                | Q(rentalagreement__unit__building__landlord__user=user)
+                | Q(user__email__in=accepted_invited_emails)
+            )
+            .distinct()
+            .order_by("name")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = TenantInvitationForm(landlord=self.request.user)
+        return context
 
 
 class ProfileUpdateView(LoginRequiredMixin, View):
