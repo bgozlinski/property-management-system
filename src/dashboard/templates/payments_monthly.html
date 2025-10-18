@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Monthly Payments{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+          <h6>Monthly payments overview</h6>
+          <div class="d-flex align-items-center">
+            <form method="get" class="d-flex align-items-center me-2" action="">
+              <div class="me-2">
+                <label for="month" class="form-label mb-0">Month</label>
+                <input type="number" min="1" max="12" id="month" name="month" value="{{ month }}" class="form-control form-control-sm" />
+              </div>
+              <div class="me-2">
+                <label for="year" class="form-label mb-0">Year</label>
+                <input type="number" id="year" name="year" value="{{ year }}" class="form-control form-control-sm" />
+              </div>
+              <div class="mt-4">
+                <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+              </div>
+            </form>
+            <a href="#" class="btn btn-sm btn-success mt-4" data-modal-target="addPaymentModal" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+              <i class="fas fa-plus me-1"></i> Add Payment
+            </a>
+          </div>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <div class="table-responsive p-0">
+            {% if grouped %}
+              {% for prop_id, pdata in grouped.items %}
+                <div class="px-4 pt-4">
+                  <h6 class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Property: {{ pdata.property }}</h6>
+                </div>
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tenant</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Base rent</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Coop</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Electricity</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Gas</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Other</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Total</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Due date</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for tenant_id, tdata in pdata.tenants.items %}
+                      {% for p in tdata.payments %}
+                      <tr>
+                        <td>
+                          <div class="d-flex px-2 py-1">
+                            <div class="d-flex flex-column justify-content-center">
+                              <h6 class="mb-0 text-sm">{{ tdata.tenant }}</h6>
+                            </div>
+                          </div>
+                        </td>
+                        <td><span class="text-xs font-weight-bold">{{ p.base_rent }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ p.coop_fee }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ p.electricity }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ p.gas }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ p.other_fees }}</span></td>
+                        <td><span class="text-xs font-weight-bold">{{ p.total_amount }}</span></td>
+                        <td>
+                          {% if p.status == 1 %}
+                            <span class="badge badge-sm bg-gradient-secondary">Pending</span>
+                          {% elif p.status == 2 %}
+                            <span class="badge badge-sm bg-gradient-success">Paid</span>
+                          {% elif p.status == 3 %}
+                            <span class="badge badge-sm bg-gradient-danger">Overdue</span>
+                          {% elif p.status == 4 %}
+                            <span class="badge badge-sm bg-gradient-dark">Cancelled</span>
+                          {% endif %}
+                        </td>
+                        <td><span class="text-xs font-weight-bold">{{ p.date_due }}</span></td>
+                        <td>
+                          <a class="text-secondary font-weight-bold text-xs me-2" href="{% url 'payment_edit' p.pk %}"><i class="fas fa-edit"></i> Edit</a>
+                          <a class="text-danger font-weight-bold text-xs" href="{% url 'payment_delete' p.pk %}"><i class="fas fa-trash"></i> Delete</a>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                      <tr class="bg-light">
+                        <td colspan="6" class="text-end"><strong>Tenant subtotal:</strong></td>
+                        <td><strong>{{ tdata.tenant_total }}</strong></td>
+                        <td colspan="2"></td>
+                      </tr>
+                    {% endfor %}
+                    <tr class="bg-secondary text-white">
+                      <td colspan="6" class="text-end"><strong>Property total:</strong></td>
+                      <td><strong>{{ pdata.property_total }}</strong></td>
+                      <td colspan="2"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              {% endfor %}
+              <div class="px-4 pt-4 pb-4">
+                <h5>Overall monthly income: {{ total_income }}</h5>
+              </div>
+            {% else %}
+              <div class="p-4">
+                <em>No payments found for the selected month.</em>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Payment Modal -->
+<div class="modal fade" id="addPaymentModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form method="post" action="{% url 'payment_add' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Add Payment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="id_rental_agreement">{{ payment_form.rental_agreement.label }}</label>
+                {{ payment_form.rental_agreement }}
+                {% if payment_form.rental_agreement.help_text %}
+                  <div class="form-text">{{ payment_form.rental_agreement.help_text }}</div>
+                {% endif %}
+                {% for error in payment_form.rental_agreement.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="id_date_due">{{ payment_form.date_due.label }}</label>
+                {{ payment_form.date_due }}
+                {% if payment_form.date_due.help_text %}
+                  <div class="form-text">{{ payment_form.date_due.help_text }}</div>
+                {% endif %}
+                {% for error in payment_form.date_due.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="id_date_paid">{{ payment_form.date_paid.label }}</label>
+                {{ payment_form.date_paid }}
+                {% if payment_form.date_paid.help_text %}
+                  <div class="form-text">{{ payment_form.date_paid.help_text }}</div>
+                {% endif %}
+                {% for error in payment_form.date_paid.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="id_status">{{ payment_form.status.label }}</label>
+                {{ payment_form.status }}
+                {% if payment_form.status.help_text %}
+                  <div class="form-text">{{ payment_form.status.help_text }}</div>
+                {% endif %}
+                {% for error in payment_form.status.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label" for="id_base_rent">{{ payment_form.base_rent.label }}</label>
+                {{ payment_form.base_rent }}
+                {% if payment_form.base_rent.help_text %}
+                  <div class="form-text">{{ payment_form.base_rent.help_text }}</div>
+                {% endif %}
+                {% for error in payment_form.base_rent.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label" for="id_coop_fee">{{ payment_form.coop_fee.label }}</label>
+                {{ payment_form.coop_fee }}
+                {% if payment_form.coop_fee.help_text %}
+                  <div class="form-text">{{ payment_form.coop_fee.help_text }}</div>
+                {% endif %}
+                {% for error in payment_form.coop_fee.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label" for="id_other_fees">{{ payment_form.other_fees.label }}</label>
+                {{ payment_form.other_fees }}
+                {% if payment_form.other_fees.help_text %}
+                  <div class="form-text">{{ payment_form.other_fees.help_text }}</div>
+                {% endif %}
+                {% for error in payment_form.other_fees.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="id_electricity">{{ payment_form.electricity.label }}</label>
+                {{ payment_form.electricity }}
+                {% if payment_form.electricity.help_text %}
+                  <div class="form-text">{{ payment_form.electricity.help_text }}</div>
+                {% endif %}
+                {% for error in payment_form.electricity.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="id_gas">{{ payment_form.gas.label }}</label>
+                {{ payment_form.gas }}
+                {% if payment_form.gas.help_text %}
+                  <div class="form-text">{{ payment_form.gas.help_text }}</div>
+                {% endif %}
+                {% for error in payment_form.gas.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12 mb-3">
+                <label class="form-label" for="id_invoice_url">{{ payment_form.invoice_url.label }}</label>
+                {{ payment_form.invoice_url }}
+                {% if payment_form.invoice_url.help_text %}
+                  <div class="form-text">{{ payment_form.invoice_url.help_text }}</div>
+                {% endif %}
+                {% for error in payment_form.invoice_url.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Open modal on buttons with data-modal-target, following the pattern used in Properties pages
+  document.addEventListener('click', function (e) {
+    const trigger = e.target.closest('[data-modal-target]');
+    if (!trigger) return;
+    const targetId = trigger.getAttribute('data-modal-target');
+    if (targetId !== 'addPaymentModal') return; // only handle our modal here
+    e.preventDefault();
+    const modalEl = document.getElementById(targetId);
+    if (!modalEl) return;
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  });
+
+  // Autofill from Rental Agreement (copied from standalone payment_form)
+  (function() {
+    function fillFromAgreement(raId) {
+      if (!raId) return;
+      fetch(`/leases/${raId}/details.json`, {headers: {"X-Requested-With": "XMLHttpRequest"}})
+        .then(function(resp){ if (!resp.ok) throw new Error('Failed to load agreement'); return resp.json(); })
+        .then(function(data){
+          var setVal = function(id, val){ var el = document.getElementById(id); if (el) { el.value = (val != null ? val : 0); el.dispatchEvent(new Event('change')); } };
+          setVal('id_base_rent', data.base_rent);
+          setVal('id_coop_fee', data.coop_fee);
+          setVal('id_electricity', data.electricity);
+          setVal('id_gas', data.gas);
+          setVal('id_other_fees', data.other_fees);
+        })
+        .catch(function(err){ console.warn(err); });
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+      var raSelect = document.getElementById('id_rental_agreement');
+      if (!raSelect) return;
+      raSelect.addEventListener('change', function(){ fillFromAgreement(this.value); });
+      if (raSelect.value) { fillFromAgreement(raSelect.value); }
+    });
+  })();
+</script>
+{% endblock %}
