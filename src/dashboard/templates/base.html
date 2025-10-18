@@ -144,6 +144,18 @@
         </li>
         {% endif %}
 
+        {% if user.is_authenticated and user.role == 1 %}
+        <!-- Payments (Tenant) -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.path|slice:':14' == '/payments/my/' %}active{% endif %}" href="{% url 'payments_tenant' %}">
+            <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="fas fa-receipt text-dark opacity-10" aria-hidden="true"></i>
+            </div>
+            <span class="nav-link-text ms-1">Payments</span>
+          </a>
+        </li>
+        {% endif %}
+
         <!-- Messages -->
         <li class="nav-item">
           <a class="nav-link {% if request.path|slice:':10' == '/messages/' %}active{% endif %}" href="{% url 'message_list' %}">
