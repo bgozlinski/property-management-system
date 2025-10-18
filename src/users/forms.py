@@ -104,3 +104,23 @@ class CustomSetPasswordForm(SetPasswordForm):
                     "placeholder": placeholder,
                     "aria-label": aria_label,
                 })
+
+
+class TenantProfileForm(forms.ModelForm):
+    class Meta:
+        from .models import Tenant  # local import to avoid circulars at import time
+        model = Tenant
+        fields = ("name", "contact_info")
+        widgets = {
+            "contact_info": forms.Textarea(attrs={"rows": 3}),
+        }
+
+
+class LandlordProfileForm(forms.ModelForm):
+    class Meta:
+        from .models import Landlord
+        model = Landlord
+        fields = ("name", "contact_info")
+        widgets = {
+            "contact_info": forms.Textarea(attrs={"rows": 3}),
+        }
