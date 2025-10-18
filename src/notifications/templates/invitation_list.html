@@ -19,7 +19,7 @@
               <thead>
                 <tr>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Property</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Unit</th>
                   <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date Sent</th>
                   <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                   <th class="text-secondary opacity-7">Actions</th>
@@ -36,8 +36,8 @@
                     </div>
                   </td>
                   <td>
-                    <p class="text-xs font-weight-bold mb-0">{{ invitation.property_unit.name }}</p>
-                    <p class="text-xs text-secondary mb-0">{{ invitation.property_unit.address }}</p>
+                    <p class="text-xs font-weight-bold mb-0">Unit {{ invitation.property_unit.number }}</p>
+                    <p class="text-xs text-secondary mb-0">{{ invitation.property_unit.building.address }}, {{ invitation.property_unit.building.city }}</p>
                   </td>
                   <td class="align-middle text-center">
                     <span class="text-secondary text-xs font-weight-bold">{{ invitation.created_at|date:"d/m/Y" }}</span>
@@ -107,7 +107,7 @@
             {{ form.email }}
           </div>
           <div class="mb-3">
-            <label class="form-label">Property</label>
+            <label class="form-label">Unit</label>
             {{ form.property_unit }}
           </div>
         </div>
