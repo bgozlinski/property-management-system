@@ -54,7 +54,7 @@ class TenantInvitationForm(forms.ModelForm):
             # Limit to Units belonging to buildings owned by the landlord
             self.fields["property_unit"].queryset = self.fields[
                 "property_unit"
-            ].queryset.filter(building__landlord__user=landlord)
+            ].queryset.filter(landlord__user=landlord)
 
 
 class ReminderForm(forms.ModelForm):
