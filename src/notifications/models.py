@@ -2,7 +2,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-from properties.models import Property, Unit
+from properties.models import Unit
 
 
 """

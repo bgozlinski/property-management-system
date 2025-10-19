@@ -1,9 +1,7 @@
-from django.views.generic import TemplateView, ListView, CreateView
+from django.views.generic import TemplateView, CreateView, UpdateView, DeleteView
 from django.utils import timezone
-from django.db.models import Sum, F
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.urls import reverse
-
 from .models import Payment
 from .forms import PaymentForm
 
@@ -119,9 +117,6 @@ class PaymentCreateView(CreateView):
         # Redirect back to monthly page of the due date
         due = obj.date_due
         return redirect(f"{reverse('payments_monthly')}?year={due.year}&month={due.month}")
-
-
-from django.views.generic import UpdateView, DeleteView
 
 class PaymentUpdateView(UpdateView):
     model = Payment

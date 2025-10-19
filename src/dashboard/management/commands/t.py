@@ -8,13 +8,7 @@ from datetime import timedelta
 # While we do not need cryptographic security for sample data, using secrets avoids linter warnings.
 from secrets import choice as secure_choice, randbelow as _secure_randbelow
 
-def secure_randint(a: int, b: int) -> int:
-    """Return a random integer N such that a <= N <= b using secrets.randbelow."""
-    if b < a:
-        raise ValueError("upper bound must be >= lower bound")
-    return a + _secure_randbelow((b - a) + 1)
-from typing import Type
-from datetime import timedelta
+
 from users.factories import TenantFactory, LandlordFactory
 from properties.factories import PropertyFactory
 from notifications.factories import ReminderFactory, TenantInvitationFactory
@@ -29,6 +23,11 @@ from leases.models import RentalAgreement
 from notifications.models import Reminder
 from users.models import Tenant, Landlord
 
+def secure_randint(a: int, b: int) -> int:
+    """Return a random integer N such that a <= N <= b using secrets.randbelow."""
+    if b < a:
+        raise ValueError("upper bound must be >= lower bound")
+    return a + _secure_randbelow((b - a) + 1)
 
 class Command(BaseCommand):
     help = "Generates realistic sample data for development purposes"

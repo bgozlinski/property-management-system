@@ -1,8 +1,6 @@
 from django import forms
 
 from .models import RentalAgreement
-from properties.models import Property
-from users.models import Landlord
 
 
 class RentalAgreementForm(forms.ModelForm):

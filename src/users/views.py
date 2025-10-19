@@ -15,7 +15,6 @@ from django.db.models import Q
 
 from notifications.forms import TenantInvitationForm
 from notifications.views.mixins import LandlordRequiredMixin
-from leases.models import RentalAgreement
 
 
 """
