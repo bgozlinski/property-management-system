@@ -79,7 +79,6 @@ class Unit(models.Model):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.AVAILABLE)
 
     def __str__(self) -> str:
-        # Show full address in selects and representations, e.g., "Mszczonowska 4 / 23, Warszawa"
         return f"{self.building.address} / {self.number}, {self.building.city}"
 
 
