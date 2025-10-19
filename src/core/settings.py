@@ -1,7 +1,6 @@
 from pathlib import Path
 import os
 from .env import env
-import sys
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -138,13 +137,9 @@ if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
-RUNNING_TESTS = (len(sys.argv) > 1 and sys.argv[1] == "test") or ("pytest" in " ".join(sys.argv))
-
-if RUNNING_TESTS:
-    CELERY_TASK_ALWAYS_EAGER = True
-    CELERY_TASK_EAGER_PROPAGATES = True
-    CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="memory://")
-    CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default="cache+memory://")
-else:
-    CELERY_BROKER_URL = env("CELERY_BROKER_URL")
-    CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default=CELERY_BROKER_URL)
+CELERY_BROKER_URL = env("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND")
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
