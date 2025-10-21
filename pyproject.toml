@@ -43,3 +43,6 @@ dev = [
     "mypy (>=1.18.2,<2.0.0)",
     "mypy (>=1.18.2,<2.0.0)"
 ]
+
+[tool.poetry.group.dev.dependencies]
+bandit = "^1.7.9"
