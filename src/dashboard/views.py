@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from .models import Payment
 from .forms import PaymentForm
+from .tax import compute_tax_for_payment
 
 
 class DashboardView(TemplateView):
@@ -31,6 +32,7 @@ class PaymentsMonthlyView(TemplateView):
         # Group payments by property then by tenant
         grouped = {}
         total_income = 0.0
+        total_tax = 0.0
         for p in qs:
             prop = p.rental_agreement.property
             tenant = p.rental_agreement.tenant
@@ -51,7 +53,8 @@ class PaymentsMonthlyView(TemplateView):
             tenants_map[tenant.id]["payments"].append(p)
             tenants_map[tenant.id]["tenant_total"] += float(p.total_amount)
             grouped[key_prop]["property_total"] += float(p.total_amount)
-            total_income += float(p.total_amount)
+            total_income += float(p.base_rent or 0.0)
+            total_tax += float(getattr(p, "tax_amount", 0.0) or 0.0)
 
         from .forms import PaymentForm
         payment_form = PaymentForm()
@@ -62,6 +65,7 @@ class PaymentsMonthlyView(TemplateView):
                 "month": month,
                 "grouped": grouped,
                 "total_income": total_income,
+                "total_tax": total_tax,
                 "payment_form": payment_form,
             }
         )
@@ -105,14 +109,19 @@ class PaymentCreateView(CreateView):
         obj = form.save(commit=False)
         # Ensure hidden 'water' field is set to 0.0 since it's excluded from the form
         obj.water = 0.0
-        # Compute total amount excluding water
-        obj.total_amount = (
+        # Subtotal before tax (excluding water)
+        subtotal = (
             float(obj.base_rent or 0.0)
             + float(obj.coop_fee or 0.0)
             + float(obj.electricity or 0.0)
             + float(obj.gas or 0.0)
             + float(obj.other_fees or 0.0)
         )
+        # Compute tax on base_rent according to business rules
+        rate, amount = compute_tax_for_payment(obj)
+        obj.tax_rate = float(rate or 0.0)
+        obj.tax_amount = float(amount or 0.0)
+        obj.total_amount = subtotal + obj.tax_amount
         obj.save()
         # Redirect back to monthly page of the due date
         due = obj.date_due
@@ -126,13 +135,17 @@ class PaymentUpdateView(UpdateView):
     def form_valid(self, form):
         obj = form.save(commit=False)
         obj.water = 0.0
-        obj.total_amount = (
+        subtotal = (
             float(obj.base_rent or 0.0)
             + float(obj.coop_fee or 0.0)
             + float(obj.electricity or 0.0)
             + float(obj.gas or 0.0)
             + float(obj.other_fees or 0.0)
         )
+        rate, amount = compute_tax_for_payment(obj)
+        obj.tax_rate = float(rate or 0.0)
+        obj.tax_amount = float(amount or 0.0)
+        obj.total_amount = subtotal + obj.tax_amount
         obj.save()
         due = obj.date_due
         return redirect(f"{reverse('payments_monthly')}?year={due.year}&month={due.month}")
