@@ -50,6 +50,8 @@ class Landlord(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     contact_info = models.TextField()
+    # ISO 3166-1 alpha-2 country code for tax residency (e.g., "PL" for Poland)
+    tax_residency_country = models.CharField(max_length=2, default="PL")
 
     def __str__(self):
         """Return the name as the string representation of the landlord."""
