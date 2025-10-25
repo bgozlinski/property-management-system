@@ -19,6 +19,9 @@ class Payment(models.Model):
     water = models.FloatField()
     gas = models.FloatField()
     other_fees = models.FloatField()
+    # Computed tax fields (Poland-only, based on landlord's residency and YTD base rent)
+    tax_rate = models.FloatField(default=0.0, help_text="Effective tax rate for this month (fraction, e.g., 0.085 for 8.5%)")
+    tax_amount = models.FloatField(default=0.0, help_text="Computed tax for this month based on base_rent")
     total_amount = models.FloatField()
     status = models.IntegerField(
         choices=StatusChoices.choices,
@@ -28,3 +31,27 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment {self.id} for {self.rental_agreement}"
+
+    @property
+    def tax_rate_percent(self) -> float:
+        """Return tax rate as percentage value for display (e.g., 8.5)."""
+        try:
+            return float(self.tax_rate or 0.0) * 100.0
+        except Exception:
+            return 0.0
+
+    @property
+    def tax_rate_with_sign(self) -> str:
+        """Formatted percentage string (e.g., "8.50%") for display in templates without filters."""
+        try:
+            return f"{float(self.tax_rate or 0.0) * 100.0:.2f}%"
+        except Exception:
+            return "0.00%"
+
+    @property
+    def tax_rate_display(self) -> str:
+        """Return formatted tax percentage without the percent sign (e.g., "8.50")."""
+        try:
+            return f"{float(self.tax_rate or 0.0) * 100.0:.2f}"
+        except Exception:
+            return "0.00"
