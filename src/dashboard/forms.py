@@ -6,8 +6,8 @@ from .models import Payment
 class PaymentForm(forms.ModelForm):
     class Meta:
         model = Payment
-        # Hide 'water' from the form while keeping it in the model
-        exclude = ("total_amount", "water")
+        # Hide computed fields and 'water' from the form while keeping them in the model
+        exclude = ("total_amount", "water", "tax_rate", "tax_amount")
         widgets = {
             "date_due": forms.DateInput(attrs={"type": "date"}),
             "date_paid": forms.DateInput(attrs={"type": "date"}),
