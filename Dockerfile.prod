@@ -1,0 +1,32 @@
+# ---- Base Stage ----
+FROM python:3.13 as base
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /app
+
+# ---- Builder Stage ----
+FROM base as builder
+
+RUN pip install poetry
+
+COPY poetry.lock pyproject.toml /app/
+
+RUN poetry config virtualenvs.create false
+
+RUN poetry install --only=main --no-root --no-interaction
+
+# ---- Final Stage ----
+FROM base as final
+
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+COPY . /app/
+
+RUN python src/manage.py collectstatic --noinput
+
+EXPOSE 8000
+
+CMD ["gunicorn", "src.wsgi:application", "--bind", "0.0.0.0:8000"]
