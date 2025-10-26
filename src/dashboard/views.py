@@ -9,13 +9,16 @@ from .forms import PaymentForm
 from .tax import compute_tax_for_payment
 
 class DashboardView(TemplateView):
+    """Display the main application dashboard."""
     template_name = 'dashboard.html'
 
 
 class PaymentsMonthlyView(TemplateView):
+    """Monthly payments dashboard grouped by property and tenant with totals."""
     template_name = 'payments_monthly.html'
 
     def get_context_data(self, **kwargs):
+        """Build context grouped by property and tenant and compute monthly totals."""
         ctx = super().get_context_data(**kwargs)
         today = timezone.now().date()
         year = int(self.request.GET.get("year", today.year))
@@ -30,7 +33,6 @@ class PaymentsMonthlyView(TemplateView):
             .filter(date_due__year=year, date_due__month=month)
         )
 
-        # Group payments by property then by tenant
         grouped = {}
         total_income = 0.0
         total_tax = 0.0
@@ -74,15 +76,16 @@ class PaymentsMonthlyView(TemplateView):
 
 
 class TenantPaymentsView(TemplateView):
+    """Display payments belonging to the currently logged-in tenant."""
     template_name = 'payments_tenant.html'
 
     def get_context_data(self, **kwargs):
+        """Return context with tenant object and their payments ordered by due date."""
         ctx = super().get_context_data(**kwargs)
         user = getattr(self.request, 'user', None)
         payments = []
         tenant = None
         if user and user.is_authenticated and getattr(user, 'role', None) == 1:
-            # Load payments for the logged-in tenant
             from users.models import Tenant as TenantModel
             try:
                 tenant = TenantModel.objects.select_related('user').get(user=user)
@@ -102,15 +105,15 @@ class TenantPaymentsView(TemplateView):
 
 
 class PaymentCreateView(CreateView):
+    """Create a new payment and compute totals and tax before saving."""
     model = Payment
     form_class = PaymentForm
     template_name = 'payment_form.html'
 
     def form_valid(self, form):
+        """Populate derived fields (water, subtotal, tax, total) and redirect to the month view."""
         obj = form.save(commit=False)
-        # Ensure hidden 'water' field is set to 0.0 since it's excluded from the form
         obj.water = 0.0
-        # Subtotal before tax (excluding water)
         subtotal = (
             float(obj.base_rent or 0.0)
             + float(obj.coop_fee or 0.0)
@@ -118,22 +121,22 @@ class PaymentCreateView(CreateView):
             + float(obj.gas or 0.0)
             + float(obj.other_fees or 0.0)
         )
-        # Compute tax on base_rent according to business rules
         rate, amount = compute_tax_for_payment(obj)
         obj.tax_rate = float(rate or 0.0)
         obj.tax_amount = float(amount or 0.0)
         obj.total_amount = subtotal + obj.tax_amount
         obj.save()
-        # Redirect back to monthly page of the due date
         due = obj.date_due
         return redirect(f"{reverse('payments_monthly')}?year={due.year}&month={due.month}")
 
 class PaymentUpdateView(UpdateView):
+    """Update an existing payment and recompute derived fields before saving."""
     model = Payment
     form_class = PaymentForm
     template_name = 'payment_form.html'
 
     def form_valid(self, form):
+        """Recalculate subtotal, tax, and total, then redirect to the month view."""
         obj = form.save(commit=False)
         obj.water = 0.0
         subtotal = (
@@ -152,12 +155,12 @@ class PaymentUpdateView(UpdateView):
         return redirect(f"{reverse('payments_monthly')}?year={due.year}&month={due.month}")
 
 class PaymentDeleteView(DeleteView):
+    """Delete a payment and redirect back to its due month list."""
     model = Payment
     template_name = 'payment_confirm_delete.html'
 
     def get_success_url(self):
-        # After deletion, return to the monthly page for the payment's due date
-        # self.object still has values during get_success_url
+        """Return the monthly listing URL for the deleted payment's due date, if available."""
         due = getattr(self.object, 'date_due', None)
         if due:
             return f"{reverse('payments_monthly')}?year={due.year}&month={due.month}"
@@ -183,7 +186,6 @@ def payments_report_pdf(request: HttpRequest) -> HttpResponse:
     import io
     from datetime import date, timedelta
 
-    # Lazy import of reportlab to avoid import-time errors if not installed in some environments
     try:
         from reportlab.pdfgen import canvas  # type: ignore
         from reportlab.lib.pagesizes import A4, landscape  # type: ignore
