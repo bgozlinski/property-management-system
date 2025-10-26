@@ -25,8 +25,11 @@
                 <button type="submit" class="btn btn-sm btn-primary">Filter</button>
               </div>
             </form>
-            <a href="#" class="btn btn-sm btn-success mt-4" data-modal-target="addPaymentModal" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+            <a href="#" class="btn btn-sm btn-success mt-4 me-2" data-modal-target="addPaymentModal" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
               <i class="fas fa-plus me-1"></i> Add Payment
+            </a>
+            <a href="#" class="btn btn-sm btn-outline-primary mt-4" data-modal-target="reportModal" data-bs-toggle="modal" data-bs-target="#reportModal">
+              <i class="fas fa-file-pdf me-1"></i> Generate Report
             </a>
           </div>
         </div>
@@ -290,6 +293,46 @@
     </div>
   </div>
 </div>
+
+<!-- Report Modal placed outside of Add Payment Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <form id="reportForm" method="get" action="{% url 'payments_report_pdf' %}" target="_blank">
+        <div class="modal-header">
+          <h5 class="modal-title" id="reportModalLabel">Generate Payments Report (PDF)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="reportYear" class="form-label">Year</label>
+            <input type="number" class="form-control" id="reportYear" name="year" value="{{ year }}" required />
+          </div>
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="fullYearSwitch" name="full_year" value="1" checked>
+            <label class="form-check-label" for="fullYearSwitch">Whole year</label>
+          </div>
+          <div class="row g-2" id="monthRangeRow">
+            <div class="col-6">
+              <label for="startMonth" class="form-label">Start month</label>
+              <input type="number" class="form-control" id="startMonth" name="start_month" min="1" max="12" value="1" disabled>
+            </div>
+            <div class="col-6">
+              <label for="endMonth" class="form-label">End month</label>
+              <input type="number" class="form-control" id="endMonth" name="end_month" min="1" max="12" value="12" disabled>
+            </div>
+          </div>
+          <div class="form-text">Select whole year or specify a month range within the year.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Generate PDF</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -299,13 +342,59 @@
     const trigger = e.target.closest('[data-modal-target]');
     if (!trigger) return;
     const targetId = trigger.getAttribute('data-modal-target');
-    if (targetId !== 'addPaymentModal') return; // only handle our modal here
+    if (targetId !== 'addPaymentModal' && targetId !== 'reportModal') return; // handle our modals
     e.preventDefault();
     const modalEl = document.getElementById(targetId);
     if (!modalEl) return;
     const modal = new bootstrap.Modal(modalEl);
     modal.show();
   });
+
+  // Report modal logic
+  (function() {
+    function updateMonthInputs() {
+      var fullYear = document.getElementById('fullYearSwitch').checked;
+      var startEl = document.getElementById('startMonth');
+      var endEl = document.getElementById('endMonth');
+      startEl.disabled = fullYear;
+      endEl.disabled = fullYear;
+      if (fullYear) {
+        startEl.value = 1; endEl.value = 12;
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+      var fullYearSwitch = document.getElementById('fullYearSwitch');
+      if (fullYearSwitch) {
+        fullYearSwitch.addEventListener('change', updateMonthInputs);
+        updateMonthInputs();
+      }
+      var form = document.getElementById('reportForm');
+      if (form) {
+        form.addEventListener('submit', function(e){
+          var year = parseInt(document.getElementById('reportYear').value || '0', 10);
+          if (!year || year < 2000 || year > 2100) {
+            e.preventDefault();
+            alert('Please enter a valid year (2000-2100).');
+            return;
+          }
+          if (!document.getElementById('fullYearSwitch').checked) {
+            var s = parseInt(document.getElementById('startMonth').value || '0', 10);
+            var eM = parseInt(document.getElementById('endMonth').value || '0', 10);
+            if (!(s >= 1 && s <= 12 && eM >= 1 && eM <= 12)) {
+              e.preventDefault();
+              alert('Start and end months must be between 1 and 12.');
+              return;
+            }
+            if (s > eM) {
+              // swap automatically instead of blocking
+              document.getElementById('startMonth').value = eM;
+              document.getElementById('endMonth').value = s;
+            }
+          }
+        });
+      }
+    });
+  })();
 
   // Autofill from Rental Agreement (copied from standalone payment_form)
   (function() {
