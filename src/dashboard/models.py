@@ -4,6 +4,12 @@ from leases.models import RentalAgreement
 
 
 class Payment(models.Model):
+    """Represents a single monthly payment tied to a rental agreement.
+
+    Includes computed tax fields used for Polish landlords, where the
+    effective tax rate and amount are derived from the base_rent and
+    year-to-date thresholds.
+    """
     class StatusChoices(models.IntegerChoices):
         PENDING = 1, 'Pending'
         PAID = 2, 'Paid'
@@ -19,7 +25,6 @@ class Payment(models.Model):
     water = models.FloatField()
     gas = models.FloatField()
     other_fees = models.FloatField()
-    # Computed tax fields (Poland-only, based on landlord's residency and YTD base rent)
     tax_rate = models.FloatField(default=0.0, help_text="Effective tax rate for this month (fraction, e.g., 0.085 for 8.5%)")
     tax_amount = models.FloatField(default=0.0, help_text="Computed tax for this month based on base_rent")
     total_amount = models.FloatField()

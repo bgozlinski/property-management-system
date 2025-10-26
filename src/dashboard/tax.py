@@ -1,3 +1,10 @@
+"""Tax computation utilities for payments, including progressive rates for Poland.
+
+Constants:
+- LOW_RATE: 8.5%
+- HIGH_RATE: 12.5%
+- THRESHOLD_PLN: income threshold for rate change (100,000 PLN)
+"""
 from __future__ import annotations
 
 from datetime import date
@@ -8,8 +15,8 @@ from django.db.models import Sum, Q
 from .models import Payment
 
 
-LOW_RATE = 0.085  # 8.5%
-HIGH_RATE = 0.125  # 12.5%
+LOW_RATE = 0.085
+HIGH_RATE = 0.125
 THRESHOLD_PLN = 100_000.0
 POLAND_CODE = "PL"
 
@@ -23,14 +30,12 @@ def _get_landlord_from_payment(p: Payment):
     if not ra:
         return None
 
-    # Primary path: through the Property on the rental agreement
     prop = getattr(ra, "property", None)
     if prop:
         landlord = getattr(prop, "landlord", None)
         if landlord:
             return landlord
 
-    # Fallback path: through Unit -> Building -> Landlord
     unit = getattr(ra, "unit", None)
     if unit:
         building = getattr(unit, "building", None)
@@ -53,7 +58,9 @@ def _is_polish_resident(landlord) -> bool:
 def _ytd_base_rent_before(p: Payment) -> float:
     """
     Sum base_rent of all payments for the same landlord in the same calendar year
-    with due date strictly before this payment's due date.
+    with due date before this payment's due date. If multiple payments share the
+    same due date (common in monthly batching), include those earlier ones too so
+    that progressive tax applies correctly within the same month/day.
     """
     landlord = _get_landlord_from_payment(p)
     if not landlord:
@@ -61,15 +68,32 @@ def _ytd_base_rent_before(p: Payment) -> float:
     due: date = p.date_due
     if not due:
         return 0.0
-    qs = Payment.objects.filter(
-        Q(rental_agreement__property__landlord=landlord) |
-        Q(rental_agreement__unit__building__landlord=landlord),
+
+    # Base scope: same landlord and year
+    base_qs = Payment.objects.filter(
+        Q(rental_agreement__property__landlord=landlord)
+        | Q(rental_agreement__unit__building__landlord=landlord),
         date_due__year=due.year,
-        date_due__lt=due,
     )
-    # Exclude current instance if updating an existing payment
+
+    # Collect payments strictly before the due date
+    q_before = Q(date_due__lt=due)
+
+    # Also include payments on the same due date that were created/saved earlier.
+    # We infer order by primary key. When creating a new object (no pk yet), include
+    # all existing payments on the same date. When updating an existing one, include
+    # those with pk less than current pk.
+    if getattr(p, "pk", None):
+        q_same_day_earlier = Q(date_due=due, pk__lt=p.pk)
+    else:
+        q_same_day_earlier = Q(date_due=due)
+
+    qs = base_qs.filter(q_before | q_same_day_earlier)
+
+    # Exclude the current instance defensively (harmless if it's not in the set)
     if getattr(p, "pk", None):
         qs = qs.exclude(pk=p.pk)
+
     agg = qs.aggregate(total=Sum("base_rent")).get("total")
     return float(agg or 0.0)
 
