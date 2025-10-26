@@ -7,7 +7,7 @@ from calendar import month_name
 from .models import Payment
 from .forms import PaymentForm
 from .tax import compute_tax_for_payment
-
+from core.tasks import send_email
 
 class DashboardView(TemplateView):
     template_name = 'dashboard.html'
