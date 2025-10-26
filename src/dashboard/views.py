@@ -9,8 +9,78 @@ from .forms import PaymentForm
 from .tax import compute_tax_for_payment
 
 class DashboardView(TemplateView):
-    """Display the main application dashboard."""
+    """Display the main application dashboard.
+
+    For landlord users, the context includes quick KPIs:
+    - rented_units: number of units currently marked as rented
+    - free_units: number of units marked as available
+    - pending_payments: count of pending or overdue payments
+    - tax_previous_month: sum of tax to pay for the previous calendar month
+    """
     template_name = 'dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        user = getattr(self.request, "user", None)
+        try:
+            from users.models import CustomUser, Landlord  # type: ignore
+            from properties.models import Unit  # type: ignore
+            from django.db.models import Q, Sum  # type: ignore
+            from django.utils import timezone  # type: ignore
+        except Exception:
+            return ctx
+
+        if not (user and getattr(user, "is_authenticated", False)):
+            return ctx
+
+        # Only compute landlord metrics for landlord users
+        role_landlord = getattr(CustomUser.RoleChoices, "LANDLORD", 2)
+        if getattr(user, "role", None) != role_landlord:
+            return ctx
+
+        try:
+            landlord = Landlord.objects.select_related("user").get(user=user)
+        except Landlord.DoesNotExist:
+            return ctx
+
+        # Units owned by landlord
+        units_qs = Unit.objects.filter(building__landlord=landlord)
+        rented_units = units_qs.filter(status=Unit.Status.RENTED).count()
+        free_units = units_qs.filter(status=Unit.Status.AVAILABLE).count()
+
+        # Pending or overdue payments for landlord
+        payments_qs = (
+            Payment.objects.filter(
+                Q(rental_agreement__property__landlord=landlord)
+                | Q(rental_agreement__unit__building__landlord=landlord)
+            )
+        )
+        pending_payments = payments_qs.filter(
+            status__in=[Payment.StatusChoices.PENDING, Payment.StatusChoices.OVERDUE]
+        ).count()
+
+        # Previous calendar month tax to pay (based on date_due)
+        today = timezone.now().date()
+        if today.month == 1:
+            prev_year, prev_month = today.year - 1, 12
+        else:
+            prev_year, prev_month = today.year, today.month - 1
+
+        tax_prev_month = (
+            payments_qs.filter(date_due__year=prev_year, date_due__month=prev_month)
+            .aggregate(total=Sum("tax_amount"))
+            .get("total")
+            or 0.0
+        )
+
+        ctx["landlord_metrics"] = {
+            "rented_units": rented_units,
+            "free_units": free_units,
+            "pending_payments": pending_payments,
+            "tax_previous_month": float(tax_prev_month or 0.0),
+            "tax_previous_month_display": f"{float(tax_prev_month or 0.0):.2f}",
+        }
+        return ctx
 
 
 class PaymentsMonthlyView(TemplateView):
