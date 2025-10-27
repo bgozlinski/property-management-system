@@ -56,8 +56,6 @@
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Electricity</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Gas</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Other</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tax rate (%)</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tax</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Total</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Due date</th>
@@ -65,50 +63,47 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for tenant_id, tdata in pdata.tenants.items %}
-                      {% for p in tdata.payments %}
-                      <tr>
-                        <td>
-                          <div class="d-flex px-2 py-1">
-                            <div class="d-flex flex-column justify-content-center">
-                              <h6 class="mb-0 text-sm">{{ tdata.tenant }}</h6>
-                            </div>
+                    {% for p in pdata.payments %}
+                    <tr>
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm">
+                              {% if p.rental_agreement and p.rental_agreement.tenant %}
+                                {{ p.rental_agreement.tenant }}
+                              {% else %}
+                                <em>Unknown tenant</em>
+                              {% endif %}
+                            </h6>
                           </div>
-                        </td>
-                        <td><span class="text-xs font-weight-bold">{{ p.base_rent|two_dec }}</span></td>
-                        <td><span class="text-xs font-weight-bold">{{ p.coop_fee|two_dec }}</span></td>
-                        <td><span class="text-xs font-weight-bold">{{ p.electricity|two_dec }}</span></td>
-                        <td><span class="text-xs font-weight-bold">{{ p.gas|two_dec }}</span></td>
-                        <td><span class="text-xs font-weight-bold">{{ p.other_fees|two_dec }}</span></td>
-                        <td><span class="text-xs font-weight-bold">{{ p.tax_rate_display }}</span></td>
-                        <td><span class="text-xs font-weight-bold">{{ p.tax_amount|two_dec }}</span></td>
-                        <td><span class="text-xs font-weight-bold">{{ p.total_amount|two_dec }}</span></td>
-                        <td>
-                          {% if p.status == 1 %}
-                            <span class="badge badge-sm bg-gradient-secondary">Pending</span>
-                          {% elif p.status == 2 %}
-                            <span class="badge badge-sm bg-gradient-success">Paid</span>
-                          {% elif p.status == 3 %}
-                            <span class="badge badge-sm bg-gradient-danger">Overdue</span>
-                          {% elif p.status == 4 %}
-                            <span class="badge badge-sm bg-gradient-dark">Cancelled</span>
-                          {% endif %}
-                        </td>
-                        <td><span class="text-xs font-weight-bold">{{ p.date_due }}</span></td>
-                        <td>
-                          <a class="text-secondary font-weight-bold text-xs me-2" href="{% url 'payment_edit' p.pk %}"><i class="fas fa-edit"></i> Edit</a>
-                          <a class="text-danger font-weight-bold text-xs" href="{% url 'payment_delete' p.pk %}"><i class="fas fa-trash"></i> Delete</a>
-                        </td>
-                      </tr>
-                      {% endfor %}
-                      <tr class="bg-light">
-                        <td colspan="8" class="text-end"><strong>Tenant subtotal:</strong></td>
-                        <td><strong>{{ tdata.tenant_total|two_dec }}</strong></td>
-                        <td colspan="3"></td>
-                      </tr>
+                        </div>
+                      </td>
+                      <td><span class="text-xs font-weight-bold">{{ p.base_rent|two_dec }}</span></td>
+                      <td><span class="text-xs font-weight-bold">{{ p.coop_fee|two_dec }}</span></td>
+                      <td><span class="text-xs font-weight-bold">{{ p.electricity|two_dec }}</span></td>
+                      <td><span class="text-xs font-weight-bold">{{ p.gas|two_dec }}</span></td>
+                      <td><span class="text-xs font-weight-bold">{{ p.other_fees|two_dec }}</span></td>
+                      <td><span class="text-xs font-weight-bold">{{ p.total_amount|two_dec }}</span></td>
+                      <td>
+                        {% if p.status == 1 %}
+                          <span class="badge badge-sm bg-gradient-secondary">Pending</span>
+                        {% elif p.status == 2 %}
+                          <span class="badge badge-sm bg-gradient-success">Paid</span>
+                        {% elif p.status == 3 %}
+                          <span class="badge badge-sm bg-gradient-danger">Overdue</span>
+                        {% elif p.status == 4 %}
+                          <span class="badge badge-sm bg-gradient-dark">Cancelled</span>
+                        {% endif %}
+                      </td>
+                      <td><span class="text-xs font-weight-bold">{{ p.date_due }}</span></td>
+                      <td>
+                        <a class="text-secondary font-weight-bold text-xs me-2" href="{% url 'payment_edit' p.pk %}"><i class="fas fa-edit"></i> Edit</a>
+                        <a class="text-danger font-weight-bold text-xs" href="{% url 'payment_delete' p.pk %}"><i class="fas fa-trash"></i> Delete</a>
+                      </td>
+                    </tr>
                     {% endfor %}
                     <tr class="bg-secondary text-white">
-                      <td colspan="8" class="text-end"><strong>Property total:</strong></td>
+                      <td colspan="6" class="text-end"><strong>Property total:</strong></td>
                       <td><strong>{{ pdata.property_total|two_dec }}</strong></td>
                       <td colspan="3"></td>
                     </tr>
@@ -145,6 +140,8 @@
                   </div>
                 </div>
               </div>
+
+
             {% else %}
               <div class="p-4">
                 <em>No payments found for the selected month.</em>
