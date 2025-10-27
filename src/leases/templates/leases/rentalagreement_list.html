@@ -20,6 +20,7 @@
               <thead>
                 <tr>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tenant</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Unit</th>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Start</th>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">End</th>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Base rent</th>
@@ -34,6 +35,7 @@
                 {% for ra in agreements %}
                 <tr>
                   <td>{{ ra.tenant }}</td>
+                  <td>{% if ra.unit %}{{ ra.unit }}{% else %}-{% endif %}</td>
                   <td>{{ ra.start_date }}</td>
                   <td>{{ ra.end_date }}</td>
                   <td>{{ ra.base_rent }}</td>
@@ -48,7 +50,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                  <td colspan="9" class="p-4"><em>No rental agreements yet.</em></td>
+                  <td colspan="10" class="p-4"><em>No rental agreements yet.</em></td>
                 </tr>
                 {% endfor %}
               </tbody>
