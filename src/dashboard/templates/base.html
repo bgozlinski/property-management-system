@@ -127,7 +127,7 @@
 
         <!-- Reminders -->
         <li class="nav-item">
-          <a class="nav-link {% if request.path|slice:':22' == '/notifications/reminders/' %}active{% endif %}" href="{% url 'reminder_list' %}">
+          <a class="nav-link {% if request.path|slice:':25' == '/notifications/reminders/' %}active{% endif %}" href="{% url 'reminder_list' %}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fas fa-bell text-dark opacity-10" aria-hidden="true"></i>
             </div>
