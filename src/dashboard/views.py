@@ -84,11 +84,11 @@ class DashboardView(TemplateView):
 
 
 class PaymentsMonthlyView(TemplateView):
-    """Monthly payments dashboard grouped by property and tenant with totals."""
+    """Monthly payments dashboard grouped by property with totals (no tenant split)."""
     template_name = 'payments_monthly.html'
 
     def get_context_data(self, **kwargs):
-        """Build context grouped by property and tenant and compute monthly totals."""
+        """Build context grouped by property and compute monthly totals."""
         ctx = super().get_context_data(**kwargs)
         today = timezone.now().date()
         year = int(self.request.GET.get("year", today.year))
@@ -107,26 +107,18 @@ class PaymentsMonthlyView(TemplateView):
         total_income = 0.0
         total_tax = 0.0
         for p in qs:
-            prop = p.rental_agreement.property
-            tenant = p.rental_agreement.tenant
+            ra = getattr(p, "rental_agreement", None)
+            prop = getattr(ra, "property", None) if ra else None
             key_prop = prop.id if prop else "unassigned"
             if key_prop not in grouped:
                 grouped[key_prop] = {
                     "property": prop,
-                    "tenants": {},
+                    "payments": [],
                     "property_total": 0.0,
                 }
-            tenants_map = grouped[key_prop]["tenants"]
-            if tenant.id not in tenants_map:
-                tenants_map[tenant.id] = {
-                    "tenant": tenant,
-                    "payments": [],
-                    "tenant_total": 0.0,
-                }
-            tenants_map[tenant.id]["payments"].append(p)
-            tenants_map[tenant.id]["tenant_total"] += float(p.total_amount)
-            grouped[key_prop]["property_total"] += float(p.total_amount)
-            total_income += float(p.base_rent or 0.0)
+            grouped[key_prop]["payments"].append(p)
+            grouped[key_prop]["property_total"] += float(getattr(p, "total_amount", 0.0) or 0.0)
+            total_income += float(getattr(p, "base_rent", 0.0) or 0.0)
             total_tax += float(getattr(p, "tax_amount", 0.0) or 0.0)
 
         from .forms import PaymentForm

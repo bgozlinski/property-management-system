@@ -16,7 +16,7 @@ class Payment(models.Model):
         OVERDUE = 3, 'Overdue'
         CANCELLED = 4, 'Cancelled'
 
-    rental_agreement = models.ForeignKey(RentalAgreement, on_delete=models.CASCADE)
+    rental_agreement = models.ForeignKey(RentalAgreement, on_delete=models.SET_NULL, null=True, blank=True)
     date_due = models.DateField()
     date_paid = models.DateField(null=True, blank=True)
     base_rent = models.FloatField()
