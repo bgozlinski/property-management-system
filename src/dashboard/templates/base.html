@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
-
-{% load static %}
+{% load static i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
 
 <head>
   <meta charset="utf-8" />
@@ -9,15 +9,15 @@
   <link rel="apple-touch-icon" sizes="76x76" href="{% static 'core/img/apple-icon.png' %}">
   <link rel="icon" type="image/png" href="{% static 'core/img/favicon.png' %}">
   <title>
-    {% block title %}Property Management System{% endblock %}
+    {% block title %}{% trans 'Property Management System' %}{% endblock %}
   </title>
   <!--     Fonts and icons     -->
-  <link href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap&subset=latin-ext" rel="stylesheet" />
   <!-- Nucleo Icons -->
   <link href="{% static 'core/css/nucleo-icons.css' %}" rel="stylesheet" />
   <link href="{% static 'core/css/nucleo-svg.css' %}" rel="stylesheet" />
   <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- CSS Files -->
   <link id="pagestyle" href="{% static 'core/css/soft-ui-dashboard.css' %}?v=1.1.0" rel="stylesheet" />
   <!-- Nepcha Analytics (nepcha.com) -->
@@ -32,18 +32,39 @@
     small.form-text {
       display: none !important;
     }
+    /* Ensure font has proper Polish diacritics support */
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif; }
+    /* Provide safe area for fixed language switcher (top-right) so it doesn't overlap content */
+    .main-content { padding-top: 56px; }
   </style>
   {% block extra_css %}{% endblock %}
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
   {% block navbar %}
+  <!-- Language Switcher Top Right -->
+  <div style="position: fixed; top: 10px; right: 16px; z-index: 1050;">
+    <div class="d-flex gap-2">
+      <form action="{% url 'set_language' %}" method="post" class="d-inline">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+        <input type="hidden" name="language" value="en">
+        <button type="submit" class="btn btn-sm btn-light border" title="English" aria-label="English">🇬🇧</button>
+      </form>
+      <form action="{% url 'set_language' %}" method="post" class="d-inline">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+        <input type="hidden" name="language" value="pl">
+        <button type="submit" class="btn btn-sm btn-light border" title="Polski" aria-label="Polski">🇵🇱</button>
+      </form>
+    </div>
+  </div>
   <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3" id="sidenav-main">
     <div class="sidenav-header">
       <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
       <a class="navbar-brand m-0" href="{% url 'dashboard' %}">
         <img src="{% static 'core/img/logo-ct-dark.png' %}" class="navbar-brand-img h-100" alt="main_logo">
-        <span class="ms-1 font-weight-bold">Property<br>Management System</span>
+        <span class="ms-1 font-weight-bold">{% trans 'Property' %}<br>{% trans 'Management System' %}</span>
       </a>
     </div>
     <hr class="horizontal dark mt-0">
@@ -66,7 +87,7 @@
                 </g>
               </svg>
             </div>
-            <span class="nav-link-text ms-1">Dashboard</span>
+            <span class="nav-link-text ms-1">{% trans 'Dashboard' %}</span>
           </a>
         </li>
         {% if user.is_authenticated %}
@@ -88,18 +109,18 @@
                 </g>
               </svg>
             </div>
-            <span class="nav-link-text ms-1">Profile</span>
+            <span class="nav-link-text ms-1">{% trans 'Profile' %}</span>
           </a>
         </li>
 
         {% if user.role == 2 or user.role == 3 %}
         <!-- Properties -->
         <li class="nav-item">
-          <a class="nav-link {% if request.path|slice:":12" == "/properties/" %}active{% endif %}" href="{% url 'property_list' %}">
+          <a class="nav-link {% if request.path|slice:':12' == '/properties/' %}active{% endif %}" href="{% url 'property_list' %}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fas fa-home text-dark opacity-10" aria-hidden="true"></i>
             </div>
-            <span class="nav-link-text ms-1">Properties</span>
+            <span class="nav-link-text ms-1">{% trans 'Properties' %}</span>
           </a>
         </li>
 
@@ -109,7 +130,7 @@
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fas fa-file-signature text-dark opacity-10" aria-hidden="true"></i>
             </div>
-            <span class="nav-link-text ms-1">Rental Agreements</span>
+            <span class="nav-link-text ms-1">{% trans 'Rental Agreements' %}</span>
           </a>
         </li>
 
@@ -119,7 +140,7 @@
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fas fa-receipt text-dark opacity-10" aria-hidden="true"></i>
             </div>
-            <span class="nav-link-text ms-1">Payments</span>
+            <span class="nav-link-text ms-1">{% trans 'Payments' %}</span>
           </a>
         </li>
 
@@ -129,7 +150,7 @@
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fas fa-bell text-dark opacity-10" aria-hidden="true"></i>
             </div>
-            <span class="nav-link-text ms-1">Reminders</span>
+            <span class="nav-link-text ms-1">{% trans 'Reminders' %}</span>
           </a>
         </li>
 
@@ -139,7 +160,7 @@
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fas fa-users text-dark opacity-10" aria-hidden="true"></i>
             </div>
-            <span class="nav-link-text ms-1">Tenants</span>
+            <span class="nav-link-text ms-1">{% trans 'Tenants' %}</span>
           </a>
         </li>
         {% endif %}
@@ -151,7 +172,7 @@
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fas fa-receipt text-dark opacity-10" aria-hidden="true"></i>
             </div>
-            <span class="nav-link-text ms-1">Payments</span>
+            <span class="nav-link-text ms-1">{% trans 'Payments' %}</span>
           </a>
         </li>
         {% endif %}
@@ -162,7 +183,7 @@
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fas fa-comments text-dark opacity-10" aria-hidden="true"></i>
             </div>
-            <span class="nav-link-text ms-1">Messages</span>
+            <span class="nav-link-text ms-1">{% trans 'Messages' %}</span>
           </a>
         </li>
 
@@ -172,7 +193,7 @@
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fas fa-sign-out-alt text-dark opacity-10" aria-hidden="true"></i>
             </div>
-            <span class="nav-link-text ms-1">Logout</span>
+            <span class="nav-link-text ms-1">{% trans 'Logout' %}</span>
           </a>
           <form method="post" action="{% url 'logout' %}" id="logout-form" style="display: none;">
             {% csrf_token %}
@@ -197,7 +218,7 @@
                 </g>
               </svg>
             </div>
-            <span class="nav-link-text ms-1">Sign Up</span>
+            <span class="nav-link-text ms-1">{% trans 'Sign Up' %}</span>
           </a>
         </li>
         <li class="nav-item">
@@ -217,7 +238,7 @@
                 </g>
               </svg>
             </div>
-            <span class="nav-link-text ms-1">Sign In</span>
+            <span class="nav-link-text ms-1">{% trans 'Sign In' %}</span>
           </a>
         </li>
         {% endif %}
@@ -256,22 +277,22 @@
       <div class="row">
         <div class="col-lg-8 mb-4 mx-auto text-center">
           <a href="javascript:;" target="_blank" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">
-            Company
+            {% trans 'Company' %}
           </a>
           <a href="javascript:;" target="_blank" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">
-            About Us
+            {% trans 'About Us' %}
           </a>
           <a href="javascript:;" target="_blank" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">
-            Team
+            {% trans 'Team' %}
           </a>
           <a href="javascript:;" target="_blank" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">
-            Products
+            {% trans 'Products' %}
           </a>
           <a href="javascript:;" target="_blank" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">
-            Blog
+            {% trans 'Blog' %}
           </a>
           <a href="javascript:;" target="_blank" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">
-            Pricing
+            {% trans 'Pricing' %}
           </a>
         </div>
         <div class="col-lg-8 mx-auto text-center mb-4 mt-2">
