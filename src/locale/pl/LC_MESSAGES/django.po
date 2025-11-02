@@ -1,0 +1,178 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: property-management-system\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-02 00:00+0000\n"
+"PO-Revision-Date: 2025-11-02 00:00+0000\n"
+"Last-Translator: Automatic <noreply@example.com>\n"
+"Language-Team: Polish\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+
+#: src/dashboard/templates/base.html:12 src/users/templates/sign-in.html:4
+msgid "Property Management System"
+msgstr "System Zarządzania Nieruchomościami"
+
+#: src/dashboard/templates/base.html:63
+msgid "Property"
+msgstr "System"
+
+#: src/dashboard/templates/base.html:63
+msgid "Management System"
+msgstr "Zarządzania Nieruchomościami"
+
+#: src/dashboard/templates/base.html:86 src/users/templates/sign-in.html:31
+msgid "Dashboard"
+msgstr "Pulpit"
+
+#: src/dashboard/templates/base.html:108
+msgid "Profile"
+msgstr "Profil"
+
+#: src/dashboard/templates/base.html:119
+msgid "Properties"
+msgstr "Nieruchomości"
+
+#: src/dashboard/templates/base.html:129
+msgid "Rental Agreements"
+msgstr "Umowy najmu"
+
+#: src/dashboard/templates/base.html:139 src/dashboard/templates/base.html:171
+msgid "Payments"
+msgstr "Płatności"
+
+#: src/dashboard/templates/base.html:149
+msgid "Reminders"
+msgstr "Przypomnienia"
+
+#: src/dashboard/templates/base.html:159
+msgid "Tenants"
+msgstr "Najemcy"
+
+#: src/dashboard/templates/base.html:182
+msgid "Messages"
+msgstr "Wiadomości"
+
+#: src/dashboard/templates/base.html:192
+msgid "Logout"
+msgstr "Wyloguj"
+
+#: src/dashboard/templates/base.html:217 src/users/templates/sign-in.html:43
+msgid "Sign Up"
+msgstr "Rejestracja"
+
+#: src/dashboard/templates/base.html:237 src/users/templates/sign-in.html:49
+msgid "Sign In"
+msgstr "Logowanie"
+
+#: src/users/templates/sign-in.html:69
+msgid "Welcome back"
+msgstr "Witamy ponownie"
+
+#: src/users/templates/sign-in.html:70
+msgid "Enter your email and password to sign in"
+msgstr "Wprowadź swój e-mail i hasło, aby się zalogować"
+
+#: src/users/templates/sign-in.html:75
+msgid "Your email or password is incorrect. Please try again."
+msgstr "Nieprawidłowy e-mail lub hasło. Spróbuj ponownie."
+
+#: src/users/templates/sign-in.html:89 src/users/templates/sign-in.html:91
+msgid "Email"
+msgstr "E-mail"
+
+#: src/users/templates/sign-in.html:93 src/users/templates/sign-in.html:95
+msgid "Password"
+msgstr "Hasło"
+
+#: src/users/templates/sign-in.html:99
+msgid "Remember me"
+msgstr "Zapamiętaj mnie"
+
+#: src/users/templates/sign-in.html:102
+msgid "Sign in"
+msgstr "Zaloguj się"
+
+#: src/users/templates/sign-in.html:108
+msgid "Forgot your password?"
+msgstr "Zapomniałeś hasła?"
+
+#: src/users/templates/sign-in.html:111
+msgid "Don't have an account?"
+msgstr "Nie masz konta?"
+
+#: src/users/templates/sign-in.html:112
+msgid "Sign up"
+msgstr "Zarejestruj się"
+
+
+#: src/dashboard/templates/dashboard.html
+msgid "Rented Units"
+msgstr "Wynajęte lokale"
+
+#: src/dashboard/templates/dashboard.html
+msgid "Free Units"
+msgstr "Wolne lokale"
+
+#: src/dashboard/templates/dashboard.html
+msgid "Pending Payments"
+msgstr "Zaległe płatności"
+
+#: src/dashboard/templates/dashboard.html
+msgid "Tax Previous Month"
+msgstr "Podatek za poprzedni miesiąc"
+
+#: src/users/templates/sign-up.html
+msgid "Welcome!"
+msgstr "Witamy!"
+
+#: src/users/templates/sign-up.html
+msgid "Use these awesome forms to login or create new account in your project for free."
+msgstr "Użyj tych świetnych formularzy, aby zalogować się lub bezpłatnie utworzyć nowe konto w swoim projekcie."
+
+#: src/users/templates/sign-up.html
+msgid "Confirm Password"
+msgstr "Potwierdź hasło"
+
+#: src/users/templates/sign-up.html
+msgid "I agree the"
+msgstr "Akceptuję"
+
+#: src/users/templates/sign-up.html
+msgid "Terms and Conditions"
+msgstr "Regulamin"
+
+#: src/users/templates/sign-up.html
+msgid "I want to register as a Landlord"
+msgstr "Chcę zarejestrować się jako Właściciel"
+
+#: src/users/templates/sign-up.html
+msgid "Already have an account?"
+msgstr "Masz już konto?"
+
+#: src/dashboard/templates/base.html
+msgid "Company"
+msgstr "Firma"
+
+#: src/dashboard/templates/base.html
+msgid "About Us"
+msgstr "O nas"
+
+#: src/dashboard/templates/base.html
+msgid "Team"
+msgstr "Zespół"
+
+#: src/dashboard/templates/base.html
+msgid "Products"
+msgstr "Produkty"
+
+#: src/dashboard/templates/base.html
+msgid "Blog"
+msgstr "Blog"
+
+#: src/dashboard/templates/base.html
+msgid "Pricing"
+msgstr "Cennik"

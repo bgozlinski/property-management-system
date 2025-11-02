@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Dashboard - Property Management System{% endblock %}
+{% block title %}{% trans 'Dashboard' %} - {% trans 'Property Management System' %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -15,7 +15,7 @@
               <div class="row">
                 <div class="col-8">
                   <div class="numbers">
-                    <p class="text-sm mb-0 text-uppercase font-weight-bold">Rented Units</p>
+                    <p class="text-sm mb-0 text-uppercase font-weight-bold">{% trans 'Rented Units' %}</p>
                     <h5 class="font-weight-bolder">{{ landlord_metrics.rented_units }}</h5>
                   </div>
                 </div>
@@ -34,7 +34,7 @@
               <div class="row">
                 <div class="col-8">
                   <div class="numbers">
-                    <p class="text-sm mb-0 text-uppercase font-weight-bold">Free Units</p>
+                    <p class="text-sm mb-0 text-uppercase font-weight-bold">{% trans 'Free Units' %}</p>
                     <h5 class="font-weight-bolder">{{ landlord_metrics.free_units }}</h5>
                   </div>
                 </div>
@@ -53,7 +53,7 @@
               <div class="row">
                 <div class="col-8">
                   <div class="numbers">
-                    <p class="text-sm mb-0 text-uppercase font-weight-bold">Pending Payments</p>
+                    <p class="text-sm mb-0 text-uppercase font-weight-bold">{% trans 'Pending Payments' %}</p>
                     <h5 class="font-weight-bolder">{{ landlord_metrics.pending_payments }}</h5>
                   </div>
                 </div>
@@ -72,7 +72,7 @@
               <div class="row">
                 <div class="col-8">
                   <div class="numbers">
-                    <p class="text-sm mb-0 text-uppercase font-weight-bold">Tax Previous Month</p>
+                    <p class="text-sm mb-0 text-uppercase font-weight-bold">{% trans 'Tax Previous Month' %}</p>
                     <h5 class="font-weight-bolder">{{ landlord_metrics.tax_previous_month_display }} PLN</h5>
                   </div>
                 </div>

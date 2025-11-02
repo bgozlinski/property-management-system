@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import logging
 from .env import env
 
 
@@ -47,6 +48,7 @@ INSTALLED_APPS += INSTALLED_EXTENSIONS
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -66,6 +68,7 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
+                "django.template.context_processors.i18n",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
@@ -109,7 +112,24 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en"
+
+LANGUAGES = [
+    ("en", "English"),
+    ("pl", "Polski"),
+]
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, "locale"),
+]
+
+# Best-effort: compile .po to .mo without requiring external gettext (dev convenience)
+try:
+    from core.compile_messages import compile_default_project_locales
+    compile_default_project_locales()
+except Exception as exc:
+    # Log and continue; in production, use proper gettext compilemessages
+    logging.getLogger(__name__).warning("Auto-compile of locales failed: %s", exc, exc_info=True)
 
 TIME_ZONE = "UTC"
 
