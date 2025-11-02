@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import logging
 from .env import env
 
 
@@ -126,9 +127,9 @@ LOCALE_PATHS = [
 try:
     from core.compile_messages import compile_default_project_locales
     compile_default_project_locales()
-except Exception:
-    # Ignore failures; in production, use proper gettext compilemessages
-    pass
+except Exception as exc:
+    # Log and continue; in production, use proper gettext compilemessages
+    logging.getLogger(__name__).warning("Auto-compile of locales failed: %s", exc, exc_info=True)
 
 TIME_ZONE = "UTC"
 

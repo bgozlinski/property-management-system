@@ -2,7 +2,10 @@ import os
 import struct
 import time
 import ast
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 # Minimal pure-Python .po -> .mo compiler (subset of msgfmt)
 # Based on Python's Tools/i18n/msgfmt.py algorithm
@@ -172,9 +175,9 @@ def compile_mo_if_needed(locale_dirs):
                 if messages:
                     mo.parent.mkdir(parents=True, exist_ok=True)
                     _write_mo(messages, mo)
-            except Exception:
-                # best effort; ignore failures
-                pass
+            except Exception as exc:
+                # Log and continue; we don't want i18n compilation to break app startup
+                logger.warning("Failed to compile translations from %s: %s", po, exc, exc_info=True)
 
 
 def compile_default_project_locales():
