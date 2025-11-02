@@ -1,6 +1,4 @@
-import os
 import struct
-import time
 import ast
 import logging
 from pathlib import Path
@@ -40,56 +38,53 @@ def _read_po(path: Path):
                 return s[1:-1]
             return s
 
-    in_msgid_plural = False
     collecting = None
-    buf = []
 
-    for l in lines:
-        l = l.rstrip('\n')
-        if l.startswith('#,'):
-            fuzzy = 'fuzzy' in l
+    for line in lines:
+        line = line.rstrip('\n')
+        if line.startswith('#,'):
+            fuzzy = 'fuzzy' in line
             continue
-        if l.startswith('#'):
+        if line.startswith('#'):
             continue
-        if l.startswith('msgctxt'):
+        if line.startswith('msgctxt'):
             if msgid is not None and msgstr is not None:
                 _add(msgctxt, msgid, msgstr)
                 msgid = msgstr = None
-            msgctxt = _normalize(l.split(' ', 1)[1])
+            msgctxt = _normalize(line.split(' ', 1)[1])
             collecting = 'ctxt'
             continue
-        if l.startswith('msgid_plural'):
+        if line.startswith('msgid_plural'):
             # We only support singular translations in this tiny compiler.
-            in_msgid_plural = True
             collecting = None
             continue
-        if l.startswith('msgid'):
+        if line.startswith('msgid'):
             if msgid is not None and msgstr is not None:
                 _add(msgctxt, msgid, msgstr)
                 msgctxt = None
                 msgstr = None
-            msgid = _normalize(l.split(' ', 1)[1])
+            msgid = _normalize(line.split(' ', 1)[1])
             fuzzy = False
             collecting = 'id'
             continue
-        if l.startswith('msgstr'):
+        if line.startswith('msgstr'):
             # support only msgstr (singular)
-            if l.startswith('msgstr['):
+            if line.startswith('msgstr['):
                 # plural form - ignore in this minimal compiler
                 collecting = None
                 continue
-            msgstr = _normalize(l.split(' ', 1)[1])
+            msgstr = _normalize(line.split(' ', 1)[1])
             collecting = 'str'
             continue
-        if l.startswith('"'):
+        if line.startswith('"'):
             if collecting == 'id' and msgid is not None:
-                msgid += _normalize(l)
+                msgid += _normalize(line)
             elif collecting == 'str' and msgstr is not None:
-                msgstr += _normalize(l)
+                msgstr += _normalize(line)
             elif collecting == 'ctxt' and msgctxt is not None:
-                msgctxt += _normalize(l)
+                msgctxt += _normalize(line)
             continue
-        if l.strip() == '':
+        if line.strip() == '':
             # end of an entry
             if msgid is not None and msgstr is not None:
                 _add(msgctxt, msgid, msgstr)
@@ -98,7 +93,6 @@ def _read_po(path: Path):
             msgstr = None
             fuzzy = False
             collecting = None
-            in_msgid_plural = False
             continue
 
     # flush last
