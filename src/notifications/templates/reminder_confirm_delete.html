@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Delete Reminder{% endblock %}
+{% block title %}{% trans 'Delete Reminder' %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -8,19 +9,19 @@
     <div class="col-12 col-lg-8 mx-auto">
       <div class="card">
         <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-          <h6 class="mb-0">Confirm deletion</h6>
+          <h6 class="mb-0">{% trans 'Confirm deletion' %}</h6>
         </div>
         <div class="card-body">
-          <p class="mb-4">Are you sure you want to delete this reminder?</p>
+          <p class="mb-4">{% trans 'Are you sure you want to delete this reminder?' %}</p>
           <ul class="list-unstyled mb-4">
-            <li><strong>Title:</strong> {{ object.title }}</li>
-            <li><strong>Address:</strong> {{ object.unit.building.address }} / {{ object.unit.number }}, {{ object.unit.building.city }}</li>
-            <li><strong>Due date:</strong> {{ object.due_date|date:"d/m/Y" }}</li>
+            <li><strong>{% trans 'Title:' %}</strong> {{ object.title }}</li>
+            <li><strong>{% trans 'Address:' %}</strong> {{ object.unit.building.address }} / {{ object.unit.number }}, {{ object.unit.building.city }}</li>
+            <li><strong>{% trans 'Due date:' %}</strong> {{ object.due_date|date:"d/m/Y" }}</li>
           </ul>
           <form method="post">
             {% csrf_token %}
-            <a href="{% url 'reminder_list' %}" class="btn btn-secondary">Cancel</a>
-            <button type="submit" class="btn btn-danger ms-2">Delete</button>
+            <a href="{% url 'reminder_list' %}" class="btn btn-secondary">{% trans 'Cancel' %}</a>
+            <button type="submit" class="btn btn-danger ms-2">{% trans 'Delete' %}</button>
           </form>
         </div>
       </div>

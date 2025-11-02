@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Conversation with {{ other_user.email }} | Property Management System{% endblock %}
+{% block title %}{% trans 'Conversation with' %} {{ other_user.email }} | {% trans 'Property Management System' %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -9,18 +10,18 @@
       <div class="card mb-4">
         <div class="card-header pb-0 d-flex justify-content-between align-items-center">
           <div>
-            <h6>Conversation with {{ other_user.email }}</h6>
+            <h6>{% trans 'Conversation with' %} {{ other_user.email }}</h6>
             <p class="text-xs text-secondary mb-0">
               {% if other_user.role == 1 %}
-                Tenant
+                {% trans 'Tenant' %}
               {% elif other_user.role == 2 %}
-                Landlord
+                {% trans 'Landlord' %}
               {% else %}
-                Administrator
+                {% trans 'Administrator' %}
               {% endif %}
             </p>
           </div>
-          <a href="{% url 'message_list' %}" class="btn btn-outline-primary btn-sm">Back to Messages</a>
+          <a href="{% url 'message_list' %}" class="btn btn-outline-primary btn-sm">{% trans 'Back to Messages' %}</a>
         </div>
         <div class="card-body">
           <div class="messages-container" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column;">
@@ -37,13 +38,13 @@
                     {{ message.content }}
                   </div>
                   <div class="message-meta text-xs {% if message.sender == request.user %}text-secondary{% else %}text-light{% endif %}">
-                    {{ message.timestamp|date:"M d, Y" }} at {{ message.timestamp|time:"H:i" }}
+                    {{ message.timestamp|date:"M d, Y" }} {% trans 'at' %} {{ message.timestamp|time:"H:i" }}
                     {% if message.sender == request.user %}
                       <span class="ms-1">
                         {% if message.read %}
-                          <i class="fas fa-check-double" title="Read"></i>
+                          <i class="fas fa-check-double" title="{% trans 'Read' %}"></i>
                         {% else %}
-                          <i class="fas fa-check" title="Sent"></i>
+                          <i class="fas fa-check" title="{% trans 'Sent' %}"></i>
                         {% endif %}
                       </span>
                     {% endif %}
@@ -52,7 +53,7 @@
               {% endfor %}
             {% else %}
               <div class="text-center py-5">
-                <p class="text-secondary mb-0">No messages yet. Start the conversation!</p>
+                <p class="text-secondary mb-0">{% trans 'No messages yet. Start the conversation!' %}</p>
               </div>
             {% endif %}
           </div>
@@ -60,10 +61,10 @@
           <form method="post" class="mt-4">
             {% csrf_token %}
             <div class="form-group">
-              <textarea name="content" class="form-control" rows="3" placeholder="Type your message here..." required></textarea>
+              <textarea name="content" class="form-control" rows="3" placeholder="{% trans 'Type your message here...' %}" required></textarea>
             </div>
             <div class="d-flex justify-content-end mt-2">
-              <button type="submit" class="btn btn-primary">Send Message</button>
+              <button type="submit" class="btn btn-primary">{% trans 'Send Message' %}</button>
             </div>
           </form>
         </div>

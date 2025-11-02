@@ -1,7 +1,7 @@
 ﻿{% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Properties{% endblock %}
+{% block title %}{% trans 'Properties' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -77,7 +77,7 @@
           <div class="row">
             <div class="col-8">
               <div class="numbers">
-                <p class="text-sm mb-0 text-uppercase font-weight-bold">Buildings</p>
+                <p class="text-sm mb-0 text-uppercase font-weight-bold">{% trans 'Buildings' %}</p>
                 <h5 class="font-weight-bolder">{{ buildings_count }}</h5>
               </div>
             </div>
@@ -97,9 +97,9 @@
     <div class="col-12">
       <div class="card mb-4">
         <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-          <h6>Buildings</h6>
+          <h6>{% trans 'Buildings' %}</h6>
           <div>
-            <a href="#" class="btn btn-primary btn-sm" data-modal-target="addBuildingModal"><i class="fas fa-plus me-2"></i>Add Building</a>
+            <a href="#" class="btn btn-primary btn-sm" data-modal-target="addBuildingModal"><i class="fas fa-plus me-2"></i>{% trans 'Add Building' %}</a>
           </div>
         </div>
         <div class="card-body px-0 pt-0 pb-2">
@@ -107,9 +107,9 @@
             <table class="table align-items-center mb-0">
               <thead>
                 <tr>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Address</th>
-                  <th class="text-secondary opacity-7">Actions</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">{% trans 'Name' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Address' %}</th>
+                  <th class="text-secondary opacity-7">{% trans 'Actions' %}</th>
                 </tr>
               </thead>
               <tbody>
@@ -118,14 +118,14 @@
                   <td><a href="{% url 'building_detail' b.id %}">{{ b.name }}</a></td>
                   <td>{{ b.address }}, {{ b.city }} {{ b.postal_code }}</td>
                   <td>
-                    <a class="text-secondary me-3" href="{% url 'edit_building' b.id %}"><i class="fas fa-edit"></i> Edit</a>
-                    <a class="text-info me-3" href="{% url 'building_detail' b.id %}"><i class="fas fa-list"></i> View Units</a>
-                    <a class="text-primary me-3" href="#" data-modal-target="addUnitModal" data-building-id="{{ b.id }}"><i class="fas fa-plus"></i> Add Unit</a>
-                    <a class="text-danger" href="{% url 'delete_building' b.id %}"><i class="fas fa-trash"></i> Delete</a>
+                    <a class="text-secondary me-3" href="{% url 'edit_building' b.id %}"><i class="fas fa-edit"></i> {% trans 'Edit' %}</a>
+                    <a class="text-info me-3" href="{% url 'building_detail' b.id %}"><i class="fas fa-list"></i> {% trans 'View Units' %}</a>
+                    <a class="text-primary me-3" href="#" data-modal-target="addUnitModal" data-building-id="{{ b.id }}"><i class="fas fa-plus"></i> {% trans 'Add Unit' %}</a>
+                    <a class="text-danger" href="{% url 'delete_building' b.id %}"><i class="fas fa-trash"></i> {% trans 'Delete' %}</a>
                   </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="3" class="text-center py-3">No buildings yet.</td></tr>
+                <tr><td colspan="3" class="text-center py-3">{% trans 'No buildings yet.' %}</td></tr>
                 {% endfor %}
               </tbody>
             </table>
@@ -149,15 +149,15 @@
       <form method="post" action="{% url 'add_building' %}">
         {% csrf_token %}
         <div class="modal-header">
-          <h5 class="modal-title">Add Building</h5>
+          <h5 class="modal-title">{% trans 'Add Building' %}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           {{ building_form.as_p }}
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans 'Cancel' %}</button>
+          <button type="submit" class="btn btn-primary">{% trans 'Save' %}</button>
         </div>
       </form>
     </div>
@@ -171,15 +171,15 @@
       <form method="post" action="{% url 'add_unit' %}">
         {% csrf_token %}
         <div class="modal-header">
-          <h5 class="modal-title">Add Unit</h5>
+          <h5 class="modal-title">{% trans 'Add Unit' %}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           {{ unit_form.as_p }}
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans 'Cancel' %}</button>
+          <button type="submit" class="btn btn-primary">{% trans 'Save' %}</button>
         </div>
       </form>
     </div>
