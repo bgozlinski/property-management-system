@@ -176,3 +176,507 @@ msgstr "Blog"
 #: src/dashboard/templates/base.html
 msgid "Pricing"
 msgstr "Cennik"
+
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Monthly Payments"
+msgstr "Miesięczne płatności"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Monthly payments overview"
+msgstr "Przegląd płatności miesięcznych"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Month"
+msgstr "Miesiąc"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Year"
+msgstr "Rok"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Filter"
+msgstr "Filtruj"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Add Payment"
+msgstr "Dodaj płatność"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Generate Report"
+msgstr "Generuj raport"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Tenant"
+msgstr "Najemca"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Base rent"
+msgstr "Czynsz podstawowy"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Coop"
+msgstr "Wspólnota"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Electricity"
+msgstr "Prąd"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Gas"
+msgstr "Gaz"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Other"
+msgstr "Inne"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Total"
+msgstr "Suma"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Status"
+msgstr "Status"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Due date"
+msgstr "Termin płatności"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Actions"
+msgstr "Akcje"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Unknown tenant"
+msgstr "Nieznany najemca"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Pending"
+msgstr "Oczekuje"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Paid"
+msgstr "Opłacono"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Overdue"
+msgstr "Zaległa"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Cancelled"
+msgstr "Anulowana"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Edit"
+msgstr "Edytuj"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Delete"
+msgstr "Usuń"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Property total"
+msgstr "Suma dla nieruchomości"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Overall monthly income"
+msgstr "Łączny miesięczny dochód"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Overall monthly tax"
+msgstr "Łączny miesięczny podatek"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "No payments found for the selected month."
+msgstr "Nie znaleziono płatności dla wybranego miesiąca."
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Cancel"
+msgstr "Anuluj"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Save Payment"
+msgstr "Zapisz płatność"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Generate Payments Report (PDF)"
+msgstr "Generuj raport płatności (PDF)"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Whole year"
+msgstr "Cały rok"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Start month"
+msgstr "Miesiąc początkowy"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "End month"
+msgstr "Miesiąc końcowy"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Select whole year or specify a month range within the year."
+msgstr "Wybierz cały rok lub określ zakres miesięcy w roku."
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Generate PDF"
+msgstr "Generuj PDF"
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Please enter a valid year (2000-2100)."
+msgstr "Wprowadź poprawny rok (2000–2100)."
+
+#: src/dashboard/templates/payments_monthly.html
+msgid "Start and end months must be between 1 and 12."
+msgstr "Miesiące początkowy i końcowy muszą być w zakresie od 1 do 12."
+
+#: src/dashboard/templates/payments_tenant.html
+msgid "My Payments"
+msgstr "Moje płatności"
+
+#: src/dashboard/templates/payments_tenant.html
+msgid "My payments"
+msgstr "Moje płatności"
+
+#: src/dashboard/templates/payments_tenant.html
+msgid "Water"
+msgstr "Woda"
+
+#: src/dashboard/templates/payments_tenant.html
+msgid "Tax rate (%)"
+msgstr "Stawka podatku (%)"
+
+#: src/dashboard/templates/payments_tenant.html
+msgid "Tax"
+msgstr "Podatek"
+
+#: src/dashboard/templates/payments_tenant.html
+msgid "No payments found."
+msgstr "Nie znaleziono płatności."
+
+#: src/properties/templates/unit_list.html
+msgid "Units"
+msgstr "Lokale"
+
+#: src/properties/templates/unit_list.html
+msgid "Building"
+msgstr "Budynek"
+
+#: src/properties/templates/unit_list.html
+msgid "Unit"
+msgstr "Lokal"
+
+#: src/properties/templates/unit_list.html
+msgid "Area (m²)"
+msgstr "Powierzchnia (m²)"
+
+#: src/properties/templates/unit_list.html
+msgid "Type"
+msgstr "Typ"
+
+#: src/properties/templates/unit_list.html
+msgid "View"
+msgstr "Podgląd"
+
+#: src/properties/templates/unit_list.html
+msgid "Add Equipment"
+msgstr "Dodaj wyposażenie"
+
+#: src/properties/templates/unit_list.html
+msgid "Add Meter"
+msgstr "Dodaj licznik"
+
+#: src/properties/templates/unit_list.html
+msgid "No units yet."
+msgstr "Brak lokali."
+
+#: src/properties/templates/property_list.html
+msgid "Add Building"
+msgstr "Dodaj budynek"
+
+#: src/properties/templates/property_list.html
+msgid "Add Unit"
+msgstr "Dodaj lokal"
+
+#: src/properties/templates/property_list.html
+msgid "Save"
+msgstr "Zapisz"
+
+#: src/properties/templates/building_list.html
+msgid "Name"
+msgstr "Nazwa"
+
+#: src/properties/templates/building_list.html
+msgid "Address"
+msgstr "Adres"
+
+#: src/properties/templates/building_list.html
+msgid "Cancel"
+msgstr "Anuluj"
+
+#: src/properties/templates/building_list.html
+msgid "Save"
+msgstr "Zapisz"
+
+
+#: src/properties/templates/property_list.html
+msgid "Buildings"
+msgstr "Budynki"
+
+#: src/properties/templates/property_list.html
+msgid "View Units"
+msgstr "Pokaż lokale"
+
+#: src/properties/templates/building_list.html
+msgid "No buildings yet."
+msgstr "Brak budynków."
+
+
+#: src/dashboard/templates/profile.html
+msgid "User Profile"
+msgstr "Profil użytkownika"
+
+#: src/dashboard/templates/profile.html
+msgid "Manage your account information"
+msgstr "Zarządzaj informacjami o swoim koncie"
+
+#: src/dashboard/templates/profile.html
+msgid "Account Information"
+msgstr "Informacje o koncie"
+
+#: src/dashboard/templates/profile.html
+msgid "Role"
+msgstr "Rola"
+
+#: src/dashboard/templates/profile.html
+msgid "Personal Information"
+msgstr "Dane osobowe"
+
+#: src/dashboard/templates/profile.html
+msgid "Name"
+msgstr "Imię i nazwisko"
+
+#: src/dashboard/templates/profile.html
+msgid "Contact Information"
+msgstr "Dane kontaktowe"
+
+#: src/dashboard/templates/profile.html
+msgid "Edit Profile"
+msgstr "Edytuj profil"
+
+#: src/dashboard/templates/profile.html
+msgid "Change Password"
+msgstr "Zmień hasło"
+
+#: src/dashboard/templates/profile.html
+msgid "No editable profile fields available."
+msgstr "Brak edytowalnych pól profilu."
+
+#: src/leases/templates/leases/rentalagreement_form.html
+msgid "Back to list"
+msgstr "Powrót do listy"
+
+#: src/leases/templates/leases/rentalagreement_confirm_delete.html
+msgid "Delete Rental Agreement"
+msgstr "Usuń umowę najmu"
+
+#: src/leases/templates/leases/rentalagreement_confirm_delete.html
+msgid "Are you sure you want to delete this rental agreement?"
+msgstr "Czy na pewno chcesz usunąć tę umowę najmu?"
+
+#: src/users/templates/tenants_list.html
+msgid "View Invitations"
+msgstr "Zobacz zaproszenia"
+
+#: src/users/templates/tenants_list.html
+msgid "Invite Tenant"
+msgstr "Zaproś najemcę"
+
+#: src/users/templates/tenants_list.html
+msgid "No tenants to display yet."
+msgstr "Brak najemców do wyświetlenia."
+
+#: src/users/templates/tenants_list.html
+msgid "Close"
+msgstr "Zamknij"
+
+#: src/users/templates/tenants_list.html
+msgid "Send Invitation"
+msgstr "Wyślij zaproszenie"
+
+#: src/messaging/templates/message_list.html
+msgid "New Message"
+msgstr "Nowa wiadomość"
+
+#: src/messaging/templates/message_list.html
+msgid "User"
+msgstr "Użytkownik"
+
+#: src/messaging/templates/message_list.html
+msgid "Last Message"
+msgstr "Ostatnia wiadomość"
+
+#: src/messaging/templates/message_list.html
+msgid "Unread"
+msgstr "Nieprzeczytane"
+
+#: src/messaging/templates/message_list.html src/messaging/templates/conversation.html src/messaging/templates/new_message.html
+msgid "Tenant"
+msgstr "Najemca"
+
+#: src/messaging/templates/message_list.html src/messaging/templates/conversation.html src/messaging/templates/new_message.html
+msgid "Landlord"
+msgstr "Właściciel"
+
+#: src/messaging/templates/message_list.html src/messaging/templates/conversation.html src/messaging/templates/new_message.html
+msgid "Administrator"
+msgstr "Administrator"
+
+#: src/messaging/templates/message_list.html
+msgid "No messages yet"
+msgstr "Brak wiadomości"
+
+#: src/messaging/templates/message_list.html src/messaging/templates/conversation.html
+msgid "at"
+msgstr "o"
+
+#: src/messaging/templates/message_list.html
+msgid "View conversation"
+msgstr "Zobacz rozmowę"
+
+#: src/messaging/templates/message_list.html
+msgid "View"
+msgstr "Pokaż"
+
+#: src/messaging/templates/message_list.html
+msgid "You don't have any messages yet."
+msgstr "Nie masz jeszcze żadnych wiadomości."
+
+#: src/messaging/templates/message_list.html
+msgid "Start a Conversation"
+msgstr "Rozpocznij rozmowę"
+
+#: src/messaging/templates/conversation.html
+msgid "Conversation with"
+msgstr "Rozmowa z"
+
+#: src/messaging/templates/conversation.html
+msgid "Back to Messages"
+msgstr "Powrót do wiadomości"
+
+#: src/messaging/templates/conversation.html
+msgid "Read"
+msgstr "Przeczytano"
+
+#: src/messaging/templates/conversation.html
+msgid "Sent"
+msgstr "Wysłano"
+
+#: src/messaging/templates/conversation.html
+msgid "No messages yet. Start the conversation!"
+msgstr "Brak wiadomości. Rozpocznij rozmowę!"
+
+#: src/messaging/templates/conversation.html src/messaging/templates/new_message.html
+msgid "Type your message here..."
+msgstr "Wpisz tutaj swoją wiadomość..."
+
+#: src/messaging/templates/new_message.html src/messaging/templates/conversation.html
+msgid "Send Message"
+msgstr "Wyślij wiadomość"
+
+#: src/messaging/templates/new_message.html
+msgid "Recipient"
+msgstr "Odbiorca"
+
+#: src/messaging/templates/new_message.html
+msgid "Select a recipient"
+msgstr "Wybierz odbiorcę"
+
+#: src/messaging/templates/new_message.html
+msgid "No available recipients found."
+msgstr "Nie znaleziono dostępnych odbiorców."
+
+#: src/messaging/templates/new_message.html
+msgid "Message"
+msgstr "Wiadomość"
+
+#: src/notifications/templates/reminder_list.html src/notifications/templates/add_reminder.html src/notifications/templates/edit_reminder.html
+msgid "Add New Reminder"
+msgstr "Dodaj nowe przypomnienie"
+
+#: src/notifications/templates/reminder_list.html
+msgid "Completed"
+msgstr "Zakończone"
+
+#: src/notifications/templates/reminder_list.html
+msgid "Edit reminder"
+msgstr "Edytuj przypomnienie"
+
+#: src/notifications/templates/reminder_list.html
+msgid "Delete reminder"
+msgstr "Usuń przypomnienie"
+
+#: src/notifications/templates/reminder_list.html
+msgid "Are you sure you want to delete this reminder?"
+msgstr "Czy na pewno chcesz usunąć to przypomnienie?"
+
+#: src/notifications/templates/reminder_list.html
+msgid "No reminders found. Create your first reminder!"
+msgstr "Nie znaleziono przypomnień. Utwórz swoje pierwsze przypomnienie!"
+
+#: src/notifications/templates/add_reminder.html
+msgid "Add Reminder"
+msgstr "Dodaj przypomnienie"
+
+#: src/notifications/templates/edit_reminder.html
+msgid "Edit Reminder"
+msgstr "Edytuj przypomnienie"
+
+#: src/notifications/templates/reminder_confirm_delete.html src/notifications/templates/notifications/reminder_confirm_delete.html
+msgid "Delete Reminder"
+msgstr "Usuń przypomnienie"
+
+#: src/notifications/templates/notifications/reminder_confirm_delete.html
+msgid "Confirm deletion"
+msgstr "Potwierdź usunięcie"
+
+#: src/notifications/templates/notifications/reminder_confirm_delete.html
+msgid "Are you sure you want to delete this reminder?"
+msgstr "Czy na pewno chcesz usunąć to przypomnienie?"
+
+#: src/notifications/templates/notifications/reminder_confirm_delete.html
+msgid "Title:"
+msgstr "Tytuł:"
+
+#: src/notifications/templates/notifications/reminder_confirm_delete.html
+msgid "Address:"
+msgstr "Adres:"
+
+#: src/notifications/templates/notifications/reminder_confirm_delete.html
+msgid "Due date:"
+msgstr "Termin:"
+
+#: src/leases/templates/leases/rentalagreement_form.html
+msgid "Save"
+msgstr "Zapisz"
+
+
+#: src/leases/templates/leases/rentalagreement_list.html
+msgid "Add Agreement"
+msgstr "Dodaj umowę"
+
+#: src/leases/templates/leases/rentalagreement_list.html
+msgid "Add Rental Agreement"
+msgstr "Dodaj umowę najmu"
+
+#: src/leases/templates/leases/rentalagreement_form.html
+msgid "Rental Agreement"
+msgstr "Umowa najmu"
+
+#: src/leases/templates/leases/rentalagreement_list.html
+msgid "Start"
+msgstr "Początek"
+
+#: src/leases/templates/leases/rentalagreement_list.html
+msgid "End"
+msgstr "Koniec"

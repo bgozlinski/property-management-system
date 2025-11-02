@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Messages | Property Management System{% endblock %}
+{% block title %}{% trans 'Messages' %} | {% trans 'Property Management System' %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -8,8 +9,8 @@
     <div class="col-12">
       <div class="card mb-4">
         <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-          <h6>Messages</h6>
-          <a href="{% url 'new_message' %}" class="btn btn-primary btn-sm">New Message</a>
+          <h6>{% trans 'Messages' %}</h6>
+          <a href="{% url 'new_message' %}" class="btn btn-primary btn-sm">{% trans 'New Message' %}</a>
         </div>
         <div class="card-body px-0 pt-0 pb-2">
           <div class="table-responsive p-0">
@@ -17,9 +18,9 @@
               <table class="table align-items-center mb-0">
                 <thead>
                   <tr>
-                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">User</th>
-                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Last Message</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Unread</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">{% trans 'User' %}</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Last Message' %}</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">{% trans 'Unread' %}</th>
                     <th class="text-secondary opacity-7"></th>
                   </tr>
                 </thead>
@@ -35,11 +36,11 @@
                             <h6 class="mb-0 text-sm">{{ conversation.user.email }}</h6>
                             <p class="text-xs text-secondary mb-0">
                               {% if conversation.user.role == 1 %}
-                                Tenant
+                                {% trans 'Tenant' %}
                               {% elif conversation.user.role == 2 %}
-                                Landlord
+                                {% trans 'Landlord' %}
                               {% else %}
-                                Administrator
+                                {% trans 'Administrator' %}
                               {% endif %}
                             </p>
                           </div>
@@ -50,12 +51,12 @@
                           {% if conversation.last_message %}
                             {{ conversation.last_message.content|truncatechars:50 }}
                           {% else %}
-                            No messages yet
+                            {% trans 'No messages yet' %}
                           {% endif %}
                         </p>
                         <p class="text-xs text-secondary mb-0">
                           {% if conversation.last_message %}
-                            {{ conversation.last_message.timestamp|date:"M d, Y" }} at {{ conversation.last_message.timestamp|time:"H:i" }}
+                            {{ conversation.last_message.timestamp|date:"M d, Y" }} {% trans 'at' %} {{ conversation.last_message.timestamp|time:"H:i" }}
                           {% endif %}
                         </p>
                       </td>
@@ -67,8 +68,8 @@
                         {% endif %}
                       </td>
                       <td class="align-middle">
-                        <a href="{% url 'conversation' conversation.user.id %}" class="btn btn-primary btn-sm" data-toggle="tooltip" data-original-title="View conversation">
-                          View
+                        <a href="{% url 'conversation' conversation.user.id %}" class="btn btn-primary btn-sm" data-toggle="tooltip" data-original-title="{% trans 'View conversation' %}">
+                          {% trans 'View' %}
                         </a>
                       </td>
                     </tr>
@@ -77,8 +78,8 @@
               </table>
             {% else %}
               <div class="text-center py-5">
-                <p class="text-secondary mb-3">You don't have any messages yet.</p>
-                <a href="{% url 'new_message' %}" class="btn btn-primary btn-sm">Start a Conversation</a>
+                <p class="text-secondary mb-3">{% trans "You don't have any messages yet." %}</p>
+                <a href="{% url 'new_message' %}" class="btn btn-primary btn-sm">{% trans 'Start a Conversation' %}</a>
               </div>
             {% endif %}
           </div>

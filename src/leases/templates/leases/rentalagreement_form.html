@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Rental Agreement{% endblock %}
+{% block title %}{% if form.instance.pk %}{% trans 'Edit' %}{% else %}{% trans 'Add' %}{% endif %} {% trans 'Rental Agreement' %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -9,8 +9,8 @@
     <div class="col-12 col-lg-8">
       <div class="card mb-4">
         <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-          <h6>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Rental Agreement</h6>
-          <a href="{% url 'rentalagreement_list' %}" class="btn btn-sm btn-secondary">Back to list</a>
+          <h6>{% if form.instance.pk %}{% trans 'Edit' %}{% else %}{% trans 'Add' %}{% endif %} {% trans 'Rental Agreement' %}</h6>
+          <a href="{% url 'rentalagreement_list' %}" class="btn btn-sm btn-secondary">{% trans 'Back to list' %}</a>
         </div>
         <div class="card-body">
           <form method="post" novalidate>
@@ -33,7 +33,7 @@
               </div>
             {% endfor %}
 
-            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="submit" class="btn btn-primary">{% trans 'Save' %}</button>
           </form>
         </div>
       </div>

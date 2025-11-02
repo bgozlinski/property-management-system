@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Tenants{% endblock %}
+{% block title %}{% trans 'Tenants' %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -8,13 +9,13 @@
     <div class="col-12">
       <div class="card mb-4">
         <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-          <h6>Tenants</h6>
+          <h6>{% trans 'Tenants' %}</h6>
           <div class="d-flex gap-2">
             <a href="{% url 'invitation_list' %}" class="btn btn-outline-secondary btn-sm">
-              <i class="fas fa-envelope-open-text me-2"></i> View Invitations
+              <i class="fas fa-envelope-open-text me-2"></i> {% trans 'View Invitations' %}
             </a>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#inviteTenantModal">
-              <i class="fas fa-user-plus me-2"></i> Invite Tenant
+              <i class="fas fa-user-plus me-2"></i> {% trans 'Invite Tenant' %}
             </button>
           </div>
         </div>
@@ -23,9 +24,9 @@
             <table class="table align-items-center mb-0">
               <thead>
                 <tr>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Unit</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">{% trans 'Name' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Email' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Unit' %}</th>
                 </tr>
               </thead>
               <tbody>
@@ -44,7 +45,7 @@
                   <td>
                     {% with ra=tenant.rentalagreement_set.first %}
                       {% if ra and ra.unit %}
-                        <span class="text-xs">Unit {{ ra.unit.number }}, {{ ra.unit.building.address }}, {{ ra.unit.building.city }}</span>
+                        <span class="text-xs">{% trans 'Unit' %} {{ ra.unit.number }}, {{ ra.unit.building.address }}, {{ ra.unit.building.city }}</span>
                       {% elif ra and ra.property %}
                         <span class="text-xs">{{ ra.property.address }}, {{ ra.property.city }}</span>
                       {% else %}
@@ -56,7 +57,7 @@
                 {% empty %}
                 <tr>
                   <td colspan="3" class="text-center py-4">
-                    <p class="text-secondary mb-0">No tenants to display yet.</p>
+                    <p class="text-secondary mb-0">{% trans "No tenants to display yet." %}</p>
                   </td>
                 </tr>
                 {% endfor %}
@@ -74,24 +75,24 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="inviteTenantModalLabel">Invite Tenant</h5>
+        <h5 class="modal-title" id="inviteTenantModalLabel">{% trans 'Invite Tenant' %}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="post" action="{% url 'send_invitation' %}">
         <div class="modal-body">
           {% csrf_token %}
           <div class="mb-3">
-            <label class="form-label">Email</label>
+            <label class="form-label">{% trans 'Email' %}</label>
             {{ form.email }}
           </div>
           <div class="mb-3">
-            <label class="form-label">Unit</label>
+            <label class="form-label">{% trans 'Unit' %}</label>
             {{ form.property_unit }}
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Send Invitation</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans 'Close' %}</button>
+          <button type="submit" class="btn btn-primary">{% trans 'Send Invitation' %}</button>
         </div>
       </form>
     </div>

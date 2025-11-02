@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 {% load formatting %}
 
-{% block title %}My Payments{% endblock %}
+{% block title %}{% trans 'My Payments' %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -10,7 +10,7 @@
     <div class="col-12">
       <div class="card mb-4">
         <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-          <h6>My payments</h6>
+          <h6>{% trans 'My payments' %}</h6>
         </div>
         <div class="card-body px-0 pt-0 pb-2">
           <div class="table-responsive p-0">
@@ -18,17 +18,17 @@
             <table class="table align-items-center mb-0">
               <thead>
                 <tr>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Base rent</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Coop</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Electricity</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Water</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Gas</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Other</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tax rate (%)</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tax</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Total</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Due date</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">{% trans 'Base rent' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Coop' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Electricity' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Water' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Gas' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Other' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Tax rate (%)' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Tax' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Total' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Status' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Due date' %}</th>
                 </tr>
               </thead>
               <tbody>
@@ -45,13 +45,13 @@
                   <td><span class="text-xs font-weight-bold">{{ p.total_amount|two_dec }}</span></td>
                   <td>
                     {% if p.status == 1 %}
-                      <span class="badge badge-sm bg-gradient-secondary">Pending</span>
+                      <span class="badge badge-sm bg-gradient-secondary">{% trans 'Pending' %}</span>
                     {% elif p.status == 2 %}
-                      <span class="badge badge-sm bg-gradient-success">Paid</span>
+                      <span class="badge badge-sm bg-gradient-success">{% trans 'Paid' %}</span>
                     {% elif p.status == 3 %}
-                      <span class="badge badge-sm bg-gradient-danger">Overdue</span>
+                      <span class="badge badge-sm bg-gradient-danger">{% trans 'Overdue' %}</span>
                     {% elif p.status == 4 %}
-                      <span class="badge badge-sm bg-gradient-dark">Cancelled</span>
+                      <span class="badge badge-sm bg-gradient-dark">{% trans 'Cancelled' %}</span>
                     {% endif %}
                   </td>
                   <td><span class="text-xs font-weight-bold">{{ p.date_due }}</span></td>
@@ -61,7 +61,7 @@
             </table>
             {% else %}
             <div class="p-4">
-              <em>No payments found.</em>
+              <em>{% trans 'No payments found.' %}</em>
             </div>
             {% endif %}
           </div>

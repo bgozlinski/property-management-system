@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}New Message | Property Management System{% endblock %}
+{% block title %}{% trans 'New Message' %} | {% trans 'Property Management System' %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -8,36 +9,36 @@
     <div class="col-12">
       <div class="card mb-4">
         <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-          <h6>New Message</h6>
-          <a href="{% url 'message_list' %}" class="btn btn-outline-primary btn-sm">Back to Messages</a>
+          <h6>{% trans 'New Message' %}</h6>
+          <a href="{% url 'message_list' %}" class="btn btn-outline-primary btn-sm">{% trans 'Back to Messages' %}</a>
         </div>
         <div class="card-body">
           <form method="post">
             {% csrf_token %}
 
             <div class="form-group mb-3">
-              <label for="recipient" class="form-control-label">Recipient</label>
+              <label for="recipient" class="form-control-label">{% trans 'Recipient' %}</label>
               <select name="recipient" id="recipient" class="form-control" required>
-                <option value="">Select a recipient</option>
+                <option value="">{% trans 'Select a recipient' %}</option>
                 {% for recipient in recipients %}
                   <option value="{{ recipient.id }}">
                     {{ recipient.email }}
-                    ({% if recipient.role == 1 %}Tenant{% elif recipient.role == 2 %}Landlord{% else %}Administrator{% endif %})
+                    ({% if recipient.role == 1 %}{% trans 'Tenant' %}{% elif recipient.role == 2 %}{% trans 'Landlord' %}{% else %}{% trans 'Administrator' %}{% endif %})
                   </option>
                 {% endfor %}
               </select>
               {% if not recipients %}
-                <small class="text-danger">No available recipients found.</small>
+                <small class="text-danger">{% trans 'No available recipients found.' %}</small>
               {% endif %}
             </div>
 
             <div class="form-group mb-3">
-              <label for="content" class="form-control-label">Message</label>
-              <textarea name="content" id="content" class="form-control" rows="5" placeholder="Type your message here..." required></textarea>
+              <label for="content" class="form-control-label">{% trans 'Message' %}</label>
+              <textarea name="content" id="content" class="form-control" rows="5" placeholder="{% trans 'Type your message here...' %}" required></textarea>
             </div>
 
             <div class="d-flex justify-content-end">
-              <button type="submit" class="btn btn-primary" {% if not recipients %}disabled{% endif %}>Send Message</button>
+              <button type="submit" class="btn btn-primary" {% if not recipients %}disabled{% endif %}>{% trans 'Send Message' %}</button>
             </div>
           </form>
         </div>
