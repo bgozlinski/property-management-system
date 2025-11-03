@@ -21,9 +21,9 @@
                 <tr>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">{% trans 'Title' %}</th>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Address' %}</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">{% trans 'Due Date' %}</th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">{% trans 'Due date' %}</th>
                   <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">{% trans 'Status' %}</th>
-                  <th class="text-secondary opacity-7">{% trans 'Actions' %}</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">{% trans 'Actions' %}</th>
                 </tr>
               </thead>
               <tbody>
@@ -99,7 +99,7 @@
             {{ form.unit }}
           </div>
           <div class="mb-3">
-            <label for="{{ form.due_date.id_for_label }}" class="form-label">{% trans 'Due Date' %}</label>
+            <label for="{{ form.due_date.id_for_label }}" class="form-label">{% trans 'Due date' %}</label>
             {{ form.due_date }}
           </div>
         </div>
