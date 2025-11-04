@@ -13,10 +13,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.10.4
+        uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          ssh-passphrase:  ${{ secrets.SSH_PASSPHRASE }}
 
       - name: Pull Latest code on VPS
         run: |
