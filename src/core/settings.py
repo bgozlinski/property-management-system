@@ -15,6 +15,7 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = []
+ALLOWED_HOSTS += env('ADDITIONAL_ALLOWED_HOSTS', default='').split(',')
 
 INTERNAL_IPS = [
     "127.0.0.1",
