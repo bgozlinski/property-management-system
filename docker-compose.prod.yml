@@ -12,6 +12,8 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
       - static_volume:/app/src/staticfiles
+      - ./certs/origin_certificate.pem:/etc/ssl/certs/origin_certificate.pem:ro
+      - ./certs/origin_private_key.pem:/etc/ssl/private/origin_private_key.pem:ro
   app:
     container_name: app
     restart: unless-stopped
